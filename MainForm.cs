@@ -151,9 +151,9 @@ namespace poc1poc2Conv
             this.grpConverter.Controls.Add(this.btnAddFolder);
             this.grpConverter.Controls.Add(this.plotFileList);
             this.grpConverter.Controls.Add(this.btnAddFile);
-            this.grpConverter.Location = new System.Drawing.Point(6, 12);
+            this.grpConverter.Location = new System.Drawing.Point(12, 12);
             this.grpConverter.Name = "grpConverter";
-            this.grpConverter.Size = new System.Drawing.Size(853, 287);
+            this.grpConverter.Size = new System.Drawing.Size(846, 287);
             this.grpConverter.TabIndex = 11;
             this.grpConverter.TabStop = false;
             this.grpConverter.Text = "Plot File Conversion (POC1 --> POC2)";
@@ -212,7 +212,7 @@ namespace poc1poc2Conv
             // 
             // btnConversion
             // 
-            this.btnConversion.Location = new System.Drawing.Point(685, 252);
+            this.btnConversion.Location = new System.Drawing.Point(678, 252);
             this.btnConversion.Name = "btnConversion";
             this.btnConversion.Size = new System.Drawing.Size(156, 24);
             this.btnConversion.TabIndex = 13;
@@ -293,7 +293,7 @@ namespace poc1poc2Conv
             this.plotFileList.HideSelection = false;
             this.plotFileList.Location = new System.Drawing.Point(4, 75);
             this.plotFileList.Name = "plotFileList";
-            this.plotFileList.Size = new System.Drawing.Size(837, 168);
+            this.plotFileList.Size = new System.Drawing.Size(830, 168);
             this.plotFileList.TabIndex = 10;
             this.plotFileList.UseCompatibleStateImageBehavior = false;
             this.plotFileList.View = System.Windows.Forms.View.Details;
@@ -301,7 +301,7 @@ namespace poc1poc2Conv
             // columnHeader2
             // 
             this.columnHeader2.Text = "File";
-            this.columnHeader2.Width = 131;
+            this.columnHeader2.Width = 126;
             // 
             // columnHeader3
             // 
@@ -354,9 +354,9 @@ namespace poc1poc2Conv
             this.grpStatus.Controls.Add(this.textBox2);
             this.grpStatus.Controls.Add(this.button1);
             this.grpStatus.Controls.Add(this.statusList);
-            this.grpStatus.Location = new System.Drawing.Point(0, 305);
+            this.grpStatus.Location = new System.Drawing.Point(12, 305);
             this.grpStatus.Name = "grpStatus";
-            this.grpStatus.Size = new System.Drawing.Size(853, 170);
+            this.grpStatus.Size = new System.Drawing.Size(846, 170);
             this.grpStatus.TabIndex = 12;
             this.grpStatus.TabStop = false;
             this.grpStatus.Text = "Status";
@@ -402,7 +402,7 @@ namespace poc1poc2Conv
             this.statusList.FullRowSelect = true;
             this.statusList.Location = new System.Drawing.Point(10, 19);
             this.statusList.Name = "statusList";
-            this.statusList.Size = new System.Drawing.Size(837, 145);
+            this.statusList.Size = new System.Drawing.Size(830, 145);
             this.statusList.TabIndex = 10;
             this.statusList.UseCompatibleStateImageBehavior = false;
             this.statusList.View = System.Windows.Forms.View.Details;
@@ -420,7 +420,7 @@ namespace poc1poc2Conv
             // columnHeader12
             // 
             this.columnHeader12.Text = "Status";
-            this.columnHeader12.Width = 356;
+            this.columnHeader12.Width = 350;
             // 
             // columnHeader13
             // 
@@ -445,7 +445,7 @@ namespace poc1poc2Conv
             // 
             this.statusStrip.Location = new System.Drawing.Point(0, 489);
             this.statusStrip.Name = "statusStrip";
-            this.statusStrip.Size = new System.Drawing.Size(871, 22);
+            this.statusStrip.Size = new System.Drawing.Size(870, 22);
             this.statusStrip.TabIndex = 13;
             this.statusStrip.Text = "statusStrip1";
             // 
@@ -458,7 +458,7 @@ namespace poc1poc2Conv
             // MainForm
             // 
             this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
-            this.ClientSize = new System.Drawing.Size(871, 511);
+            this.ClientSize = new System.Drawing.Size(870, 511);
             this.Controls.Add(this.statusStrip);
             this.Controls.Add(this.grpStatus);
             this.Controls.Add(this.grpConverter);
