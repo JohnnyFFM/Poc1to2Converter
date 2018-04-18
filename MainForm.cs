@@ -466,7 +466,7 @@ namespace poc1poc2Conv
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.Name = "MainForm";
-            this.Text = "Johnny\'s POC1->POC2 Plot Converter v.0.3";
+            this.Text = "Johnny\'s POC1->POC2 Plot Converter v.1.0";
             this.grpConverter.ResumeLayout(false);
             this.grpConverter.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.memoryLimit)).EndInit();
