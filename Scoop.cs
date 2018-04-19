@@ -4,16 +4,13 @@ using System.Runtime.InteropServices;
 
 namespace poc1poc2Conv
 {
-    public struct Scoop
+    public class Scoop
     {
-        //[MarshalAs(UnmanagedType.ByValArray)]//, SizeConst=64
         public byte[] byteArrayField;
 
-        public static Scoop FromBinaryReaderField(BinaryReader br, int noncelimit)
+        public Scoop(int nonces)
         {
-            Scoop s = new Scoop();
-            s.byteArrayField = br.ReadBytes(64 * noncelimit);
-            return s;
+            Array.Resize(ref byteArrayField, 64 * nonces);
         }
 
         public byte[] ToByteArray()

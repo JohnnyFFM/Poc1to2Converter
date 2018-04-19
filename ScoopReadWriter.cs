@@ -1,16 +1,13 @@
-using Microsoft.Win32.SafeHandles;
 using System;
 using System.IO;
-using System.Runtime.InteropServices;
 namespace poc1poc2Conv
 {
-	/// <summary>
-	/// Summary description for CBRFieldTestStructReader.
-	/// </summary>
-	public class ScoopReadWriter
+    /// <summary>
+    /// Summary description for ScoopReadWriter.
+    /// </summary>
+    public class ScoopReadWriter
 	{
 		private BinaryReader _br; 
-		protected Scoop _data;
 		protected string _sFileName;
         protected string _tFileName;
         private long _lLength = -1;
@@ -19,7 +16,6 @@ namespace poc1poc2Conv
         protected FileStream _fs2;
         bool _inline;
         private long _lPosition = 0;
-		private bool _bUseCachedValuesForEOF = false;
 
         //inline constructor
         public ScoopReadWriter(string stFileName)
@@ -44,26 +40,11 @@ namespace poc1poc2Conv
 			_br = null;
 		}
 
-		public Scoop Data
-		{
-			get
-			{
-				return _data;
-			}
-		}
-
 		public bool EOF
 		{
 			get
 			{	
-				if(_bUseCachedValuesForEOF)
-				{
 					return (!_bOpen || (_lPosition >= _lLength));
-				}
-				else
-				{
-					return (!_bOpen || (_br.BaseStream.Position >= _br.BaseStream.Length));
-				}
 			}
 		}
 
@@ -71,15 +52,13 @@ namespace poc1poc2Conv
         {
             if (_inline)
             {
-
-            
                 _fs2 = new FileStream(_sFileName, FileMode.Open, FileAccess.ReadWrite, FileShare.None,1048576,FileOptions.SequentialScan|FileOptions.WriteThrough);
-                      _br = new BinaryReader(_fs2);
+                _br = new BinaryReader(_fs2);
             }
             else
             {
-                _fs = new FileStream(_sFileName, FileMode.Open, FileAccess.Read, FileShare.Read);
-                _fs2 = new FileStream(_tFileName, FileMode.Create, FileAccess.Write, FileShare.None);
+                _fs = new FileStream(_sFileName, FileMode.Open, FileAccess.Read, FileShare.Read, 1048576, FileOptions.SequentialScan);
+                _fs2 = new FileStream(_tFileName, FileMode.Create, FileAccess.Write, FileShare.None, 1048576, FileOptions.WriteThrough);
                 _br = new BinaryReader(_fs);
             }
             _lLength = _br.BaseStream.Length;
@@ -87,43 +66,21 @@ namespace poc1poc2Conv
             _bOpen = true;
         }
 
-        public Scoop Read(int noncelimit)
+        public void ReadScoop(int scoop, long totalNonces, long startNonce, Scoop target, int limit)
 		{
-				_data = Scoop.FromBinaryReaderField(_br, noncelimit);
-				_lPosition += _data.Size();
-            return _data;
-		}
-
-        public void Write(Scoop data)
-        {
-            if (_fs2 == null)
-                throw new Exception("Cannot call write on closed ScoopWriter");
-            byte[] buff = data.ToByteArray();
-            _fs2.Write(buff, 0, buff.Length);
-            _lPosition += _data.Size();
-        }
-
-        public void setReadPosition(int scoop, long nonces, long start)
-        {
-            _lPosition = scoop * (64 * nonces) + start * 64;
+            _lPosition = scoop * (64 * totalNonces) + startNonce * 64;
             _br.BaseStream.Seek(_lPosition, SeekOrigin.Begin);
+            _br.BaseStream.Read(target.byteArrayField, 0, limit * 64);
+            //target.byteArrayField = _br.ReadBytes(limit * 64);
+            _lPosition += limit * 64;
         }
 
-        public void setWritePosition(int scoop, long nonces, long start)
+        public void WriteScoop(int scoop, long totalNonces, long startNonce, Scoop source, int limit)
         {
-            _lPosition = scoop * (64 * nonces) + start * 64;
+            _lPosition = scoop * (64 * totalNonces) + startNonce * 64;
             _fs2.Seek(_lPosition, SeekOrigin.Begin);
+            _fs2.Write(source.byteArrayField, 0, limit * 64);
+            _lPosition += limit * 64;
         }
-        public bool UseCachedValuesForEOF
-		{
-			get
-			{
-				return _bUseCachedValuesForEOF;
-			}
-			set
-			{
-				_bUseCachedValuesForEOF = value;
-			}
-		}
 	}
 }

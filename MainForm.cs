@@ -466,7 +466,9 @@ namespace poc1poc2Conv
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.Name = "MainForm";
-            this.Text = "Johnny\'s POC1->POC2 Plot Converter v.1.0";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            this.Text = "Johnny\'s POC1->POC2 Plot Converter v.1.1";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.grpConverter.ResumeLayout(false);
             this.grpConverter.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.memoryLimit)).EndInit();
@@ -602,19 +604,18 @@ namespace poc1poc2Conv
 
             //main loop
             foreach (ListViewItem x in statusList.Items) {
-                // calc nonces
+                // get plot file nonces and maximum nonces to read (limit)
                 int nonces = Convert.ToInt32(x.SubItems[1].Text);
                 int limit = Convert.ToInt32(memoryLimit.Value) * 8192;
                 DateTime start = DateTime.Now;
                 TimeSpan elapsed;
                 TimeSpan togo;
                 //allocate memory
-                Scoop scoop1 = new Scoop();  //space needed for one partial scoop
-                Scoop scoop2 = new Scoop();  //space needed for one partial scoop
-
-                //Create Reader/Writer
+                Scoop scoop1 = new Scoop(Math.Min(nonces, limit));  //space needed for one partial scoop
+                Scoop scoop2 = new Scoop(Math.Min(nonces, limit));  //space needed for one partial scoop
+                //Create and open Reader/Writer
                 ScoopReadWriter scoopReadWriter;
-                if (outputDir.Text == "")
+                if (outputDir.Text == "")  //inline
                 {
                     scoopReadWriter = new ScoopReadWriter(x.Text);
                 }
@@ -624,51 +625,46 @@ namespace poc1poc2Conv
                 }
                 scoopReadWriter.Open();
 
-                //loop scoops
+                //loop scoop pairs
                 for (int y = 0; y < 2048; y++)
                 {
                     x.SubItems[2].Text = "Processing Scoop Pairs " + (y + 1).ToString() + "/2048";
+                    Application.DoEvents();
                     //loop partial scoop
                     for (int z = 0; z < nonces; z+=limit){
-                        scoop1 = ReadPartialScoop(scoopReadWriter,x.Text, nonces, y,z, Math.Min(nonces - z, limit)); 
-                        scoop2 = ReadPartialScoop(scoopReadWriter,x.Text, nonces, 4095-y,z, Math.Min(nonces - z, limit));
+                        scoopReadWriter.ReadScoop(y, nonces, z, scoop1, Math.Min(nonces - z, limit));
+                        scoopReadWriter.ReadScoop(4095-y, nonces, z, scoop2, Math.Min(nonces - z, limit));
                         Poc1poc2shuffle(scoop1, scoop2, Math.Min(nonces - z, limit));
-                        WritePartialScoop(scoopReadWriter,x.Text, nonces, 4095 - y, z, scoop2, Math.Min(nonces - z, limit));
-                        WritePartialScoop(scoopReadWriter,x.Text, nonces, y, z, scoop1, Math.Min(nonces - z, limit));
-                       // scoopReadWriter.Flush();
+                        scoopReadWriter.WriteScoop(4095 - y, nonces, z, scoop2, Math.Min(nonces - z, limit));
+                        scoopReadWriter.WriteScoop(y, nonces, z, scoop1, Math.Min(nonces - z, limit));
                     }
+                    //update status
                     elapsed = DateTime.Now.Subtract(start);
                     togo = TimeSpan.FromTicks(elapsed.Ticks / (y + 1) * (2048 - y - 1));
                     x.SubItems[3].Text = Math.Round((double)(y + 1) / 2048 * 100).ToString() + "%";
                     x.SubItems[4].Text = DateTime.Now.Subtract(start).ToString();
                     x.SubItems[5].Text = togo.ToString();
-                    Application.DoEvents();
+                    
                 }
-                // rename file
+                // close reader/writer
                 scoopReadWriter.Close();
+                // rename file
                 if (outputDir.Text == "") System.IO.File.Move(x.Text, x.Text.Replace(nonces.ToString() + "_" + nonces.ToString(), nonces.ToString()));
+                // update status
                 x.SubItems[2].Text = "Plot successfully converted.";
 
-                //clear buffer
-                //scoop1 = null;
-                //scoop2 = null;
+                //free memory
+                scoop1 = null;
+                scoop2 = null;
                 GC.Collect();
             }
             btnConversion.Enabled = true;
         }
 
-  
-        private void WritePartialScoop(ScoopReadWriter writer,string file, int nonces, int scoop, int start, Scoop target, int len)
-        {
-            writer.setWritePosition(scoop, nonces, start);
-            writer.UseCachedValuesForEOF = true;
-            writer.Write(target);
-        }
-
-        private void Poc1poc2shuffle(Scoop scoop1, Scoop scoop2, int len)
+        private void Poc1poc2shuffle(Scoop scoop1, Scoop scoop2, int limit)
         {
             byte buffer;
-            for (int i = 0; i < len; i++)
+            for (int i = 0; i < limit; i++)
             {
                 for (int j = 32; j < 64; j++)
                 {
@@ -677,13 +673,6 @@ namespace poc1poc2Conv
                     scoop2.byteArrayField[64 * i + j] = buffer;
                 }
             }
-        }
-
-        private Scoop ReadPartialScoop(ScoopReadWriter reader,string file, int nonces, int scoop, int start, int len)
-        {
-            reader.setReadPosition(scoop,nonces,start);
-            reader.UseCachedValuesForEOF = true;
-            return reader.Read(len);
         }
 
         private void btnAddFile_Click(object sender, EventArgs e)
@@ -718,6 +707,20 @@ namespace poc1poc2Conv
             {
                 outputDir.Text = folderBrowserDialog.SelectedPath;
             }
+        }
+
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (!btnConversion.Enabled) {
+                if (outputDir.Text == "") {
+                    var window = MessageBox.Show("Warning!", "Inline Conversion in progress! Closing the app will destroy your plot file. Are you sure?", MessageBoxButtons.YesNo);
+                    e.Cancel = (window == DialogResult.No); }
+                else {
+                    var window = MessageBox.Show("Warning!", "Conversion in progress! Closing the app will destroy your target plot file. Are you sure?", MessageBoxButtons.YesNo);
+                    e.Cancel = (window == DialogResult.No);
+                }
+            }
+        
         }
     }
 
