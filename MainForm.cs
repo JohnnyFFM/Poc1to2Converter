@@ -667,8 +667,8 @@ namespace poc1poc2Conv
                         scoopReadWriter.ReadScoop(y, nonces[i], z, scoop1, Math.Min(nonces[i] - z, limit));
                         scoopReadWriter.ReadScoop(4095 - y, nonces[i], z, scoop2, Math.Min(nonces[i] - z, limit));
                         Poc1poc2shuffle(scoop1, scoop2, Math.Min(nonces[i] - z, limit));
-                        //scoopReadWriter.WriteScoop(4095 - y, nonces, z, scoop2, Math.Min(nonces - z, limit));
-                        //scoopReadWriter.WriteScoop(y, nonces, z, scoop1, Math.Min(nonces - z, limit));
+                        scoopReadWriter.WriteScoop(4095 - y, nonces[i], z, scoop2, Math.Min(nonces[i] - z, limit));
+                        scoopReadWriter.WriteScoop(y, nonces[i], z, scoop1, Math.Min(nonces[i] - z, limit));
                     }
                     //update status
                     elapsed = DateTime.Now.Subtract(start);
@@ -681,7 +681,7 @@ namespace poc1poc2Conv
                 // close reader/writer
                 scoopReadWriter.Close();
                 // rename file
-                //if (outputDir.Text == "") System.IO.File.Move(filename, filename.Replace(nonces.ToString() + "_" + nonces.ToString(), nonces.ToString()));
+                if (outputDir.Text == "") System.IO.File.Move(filename[i], filename[i].Replace(nonces[i].ToString() + "_" + nonces[i].ToString(), nonces[i].ToString()));
                 // update status
                 setStatus(index[i], 2, "Plot successfully converted.");
 
