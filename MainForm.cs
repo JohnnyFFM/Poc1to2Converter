@@ -179,13 +179,13 @@ namespace poc1poc2Conv
             this.outputLabel.AutoSize = true;
             this.outputLabel.Location = new System.Drawing.Point(12, 258);
             this.outputLabel.Name = "outputLabel";
-            this.outputLabel.Size = new System.Drawing.Size(205, 13);
+            this.outputLabel.Size = new System.Drawing.Size(208, 13);
             this.outputLabel.TabIndex = 21;
-            this.outputLabel.Text = "Output Folder (empty for inline conversion)";
+            this.outputLabel.Text = "Output Folder (empty for inline conversion):";
             // 
             // btnClearSelected
             // 
-            this.btnClearSelected.Location = new System.Drawing.Point(361, 21);
+            this.btnClearSelected.Location = new System.Drawing.Point(243, 21);
             this.btnClearSelected.Name = "btnClearSelected";
             this.btnClearSelected.Size = new System.Drawing.Size(112, 24);
             this.btnClearSelected.TabIndex = 20;
@@ -194,7 +194,7 @@ namespace poc1poc2Conv
             // 
             // btnClearAll
             // 
-            this.btnClearAll.Location = new System.Drawing.Point(243, 21);
+            this.btnClearAll.Location = new System.Drawing.Point(361, 21);
             this.btnClearAll.Name = "btnClearAll";
             this.btnClearAll.Size = new System.Drawing.Size(112, 24);
             this.btnClearAll.TabIndex = 19;
@@ -212,7 +212,7 @@ namespace poc1poc2Conv
             // 
             // btnConversion
             // 
-            this.btnConversion.Location = new System.Drawing.Point(678, 252);
+            this.btnConversion.Location = new System.Drawing.Point(679, 252);
             this.btnConversion.Name = "btnConversion";
             this.btnConversion.Size = new System.Drawing.Size(156, 24);
             this.btnConversion.TabIndex = 13;
@@ -291,9 +291,9 @@ namespace poc1poc2Conv
             this.columnHeader9});
             this.plotFileList.FullRowSelect = true;
             this.plotFileList.HideSelection = false;
-            this.plotFileList.Location = new System.Drawing.Point(4, 75);
+            this.plotFileList.Location = new System.Drawing.Point(10, 75);
             this.plotFileList.Name = "plotFileList";
-            this.plotFileList.Size = new System.Drawing.Size(830, 168);
+            this.plotFileList.Size = new System.Drawing.Size(824, 168);
             this.plotFileList.TabIndex = 10;
             this.plotFileList.UseCompatibleStateImageBehavior = false;
             this.plotFileList.View = System.Windows.Forms.View.Details;
@@ -301,7 +301,7 @@ namespace poc1poc2Conv
             // columnHeader2
             // 
             this.columnHeader2.Text = "File";
-            this.columnHeader2.Width = 126;
+            this.columnHeader2.Width = 121;
             // 
             // columnHeader3
             // 
@@ -402,7 +402,7 @@ namespace poc1poc2Conv
             this.statusList.FullRowSelect = true;
             this.statusList.Location = new System.Drawing.Point(10, 19);
             this.statusList.Name = "statusList";
-            this.statusList.Size = new System.Drawing.Size(830, 145);
+            this.statusList.Size = new System.Drawing.Size(824, 145);
             this.statusList.TabIndex = 10;
             this.statusList.UseCompatibleStateImageBehavior = false;
             this.statusList.View = System.Windows.Forms.View.Details;
@@ -420,7 +420,7 @@ namespace poc1poc2Conv
             // columnHeader12
             // 
             this.columnHeader12.Text = "Status";
-            this.columnHeader12.Width = 350;
+            this.columnHeader12.Width = 346;
             // 
             // columnHeader13
             // 
@@ -467,7 +467,7 @@ namespace poc1poc2Conv
             this.MaximizeBox = false;
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Johnny\'s POC1->POC2 Plot Converter v.1.1";
+            this.Text = "Johnny\'s POC1->POC2 Plot Converter v.1.2";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.grpConverter.ResumeLayout(false);
             this.grpConverter.PerformLayout();
