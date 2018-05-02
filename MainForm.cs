@@ -467,7 +467,7 @@ namespace poc1poc2Conv
             this.MaximizeBox = false;
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Johnny\'s POC1->POC2 Plot Converter v.1.3";
+            this.Text = "Johnny\'s POC1->POC2 Plot Converter v.1.4";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.grpConverter.ResumeLayout(false);
             this.grpConverter.PerformLayout();
@@ -578,15 +578,12 @@ namespace poc1poc2Conv
                     return;
                 }
             }
-            else
-            {
-                DialogResult dialogResult = MessageBox.Show("Programm will shortly freeze to allocate disk space...", "Freeze Warning", MessageBoxButtons.OK);
-            }
             
             btnConversion.Enabled = false;
             outputDir.Enabled = false;
             btnBrowse.Enabled = false;
             memoryLimit.Enabled = false;
+            
             //create status tasks
             statusList.Items.Clear();
             foreach (ListViewItem x in plotFileList.Items) {
@@ -655,6 +652,12 @@ namespace poc1poc2Conv
                     scoopReadWriter = new ScoopReadWriter(filename[i], outputDir.Text + "\\" + Path.GetFileName(filename[i]).Replace(nonces.ToString() + "_" + nonces.ToString(), nonces.ToString()));
                 }
                 scoopReadWriter.Open();
+                
+                //prealloc disk space
+                if (outputDir.Text != "")
+                {
+                    scoopReadWriter.PreAlloc(nonces[i]);
+                }
 
                 //loop scoop pairs
                 for (int y = 0; y < 2048; y++)
