@@ -451,7 +451,6 @@ namespace poc1poc2Conv
             // 
             // openFileDialog
             // 
-            this.openFileDialog.FileName = "openFileDialog1";
             this.openFileDialog.Filter = "Poc1 Plot files|*_*_*_*.*";
             this.openFileDialog.Multiselect = true;
             // 
@@ -467,7 +466,7 @@ namespace poc1poc2Conv
             this.MaximizeBox = false;
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Johnny\'s POC1->POC2 Plot Converter v.1.4";
+            this.Text = "Johnny\'s POC1->POC2 Plot Converter v.1.5";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.grpConverter.ResumeLayout(false);
             this.grpConverter.PerformLayout();
@@ -677,8 +676,8 @@ namespace poc1poc2Conv
                     elapsed = DateTime.Now.Subtract(start);
                     togo = TimeSpan.FromTicks(elapsed.Ticks / (y + 1) * (2048 - y - 1));
                     setStatus(index[i], 3, Math.Round((double)(y + 1) / 2048 * 100).ToString() + "%");
-                    setStatus(index[i], 4, DateTime.Now.Subtract(start).ToString());
-                    setStatus(index[i], 5, togo.ToString());
+                    setStatus(index[i], 4, timeSpanToString(elapsed));
+                    setStatus(index[i], 5, timeSpanToString(togo));
 
                 }
                 // close reader/writer
@@ -693,8 +692,19 @@ namespace poc1poc2Conv
                 scoop2 = null;
                 GC.Collect();
             }
-            
+        }
 
+        //prettyprint timespan
+        private static string timeSpanToString(TimeSpan timeSpan)
+        {
+            if (timeSpan.ToString().LastIndexOf(".") > -1)
+            {
+                return timeSpan.ToString().Substring(0, timeSpan.ToString().LastIndexOf("."));
+            }
+            else
+            {
+                return timeSpan.ToString();
+            }
         }
 
         private void setStatus(int ix1, int ix2, string value)
