@@ -648,7 +648,7 @@ namespace poc1poc2Conv
                 }
                 else
                 {
-                    scoopReadWriter = new ScoopReadWriter(filename[i], outputDir.Text + "\\" + Path.GetFileName(filename[i]).Replace(nonces.ToString() + "_" + nonces.ToString(), nonces.ToString()));
+                    scoopReadWriter = new ScoopReadWriter(filename[i], outputDir.Text + "\\" + Path.GetFileName(filename[i]).Replace(nonces[i].ToString() + "_" + nonces[i].ToString(), nonces[i].ToString()));
                 }
                 scoopReadWriter.Open();
                 
@@ -683,7 +683,8 @@ namespace poc1poc2Conv
                 // close reader/writer
                 scoopReadWriter.Close();
                 // rename file
-                System.IO.File.Move(filename[i], filename[i].Replace(nonces[i].ToString() + "_" + nonces[i].ToString(), nonces[i].ToString()));
+                if (outputDir.Text != "")
+                    System.IO.File.Move(filename[i], filename[i].Replace(nonces[i].ToString() + "_" + nonces[i].ToString(), nonces[i].ToString()));
                 // update status
                 setStatus(index[i], 2, "Plot successfully converted.");
 
