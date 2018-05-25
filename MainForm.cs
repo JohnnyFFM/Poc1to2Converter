@@ -683,7 +683,7 @@ namespace poc1poc2Conv
                 // close reader/writer
                 scoopReadWriter.Close();
                 // rename file
-                if (outputDir.Text == "") System.IO.File.Move(filename[i], filename[i].Replace(nonces[i].ToString() + "_" + nonces[i].ToString(), nonces[i].ToString()));
+                System.IO.File.Move(filename[i], filename[i].Replace(nonces[i].ToString() + "_" + nonces[i].ToString(), nonces[i].ToString()));
                 // update status
                 setStatus(index[i], 2, "Plot successfully converted.");
 
