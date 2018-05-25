@@ -71,9 +71,11 @@ namespace poc1poc2Conv
 
         public void Open()
         {
+            FileOptions FileFlagNoBuffering = (FileOptions)0x20000000;
             if (_inline)
             {
-                _fs2 = new FileStream(_sFileName, FileMode.Open, FileAccess.ReadWrite, FileShare.None,1048576,FileOptions.SequentialScan|FileOptions.WriteThrough);
+               
+                _fs2 = new FileStream(_sFileName, FileMode.Open, FileAccess.ReadWrite, FileShare.None,1048576, FileFlagNoBuffering);
                 _br = new BinaryReader(_fs2);
             }
             else
@@ -86,8 +88,9 @@ namespace poc1poc2Conv
                         Application.Exit();
                     }
                 }
-               _fs = new FileStream(_sFileName, FileMode.Open, FileAccess.Read, FileShare.Read, 1048576, FileOptions.SequentialScan);
-                _fs2 = new FileStream(_tFileName, FileMode.Create, FileAccess.Write, FileShare.None, 1048576, FileOptions.WriteThrough);
+                
+                _fs = new FileStream(_sFileName, FileMode.Open, FileAccess.Read, FileShare.Read, 1048576, FileFlagNoBuffering);
+                _fs2 = new FileStream(_tFileName, FileMode.Create, FileAccess.Write, FileShare.None, 1048576, FileFlagNoBuffering);
                 _br = new BinaryReader(_fs);
             }
             _lLength = _br.BaseStream.Length;
