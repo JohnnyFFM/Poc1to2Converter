@@ -246,12 +246,12 @@ namespace poc1poc2Conv
             0});
             this.memoryLimit.Location = new System.Drawing.Point(750, 25);
             this.memoryLimit.Maximum = new decimal(new int[] {
-            2000000000,
+            4096,
             0,
             0,
             0});
             this.memoryLimit.Minimum = new decimal(new int[] {
-            1,
+            96,
             0,
             0,
             0});
@@ -630,7 +630,7 @@ namespace poc1poc2Conv
         private void Conversion(int[] index, string[] filename, int[] nonces)
         {
             // calc maximum nonces to read (limit)
-            int limit = Convert.ToInt32(memoryLimit.Value) * 8192;
+            int limit = Convert.ToInt32(memoryLimit.Value) * 8192 -1;
             //loop all tasks
             for (int i = 0; i < index.Length; i++)
             {
