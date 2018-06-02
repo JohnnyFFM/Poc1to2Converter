@@ -771,23 +771,25 @@ namespace poc1poc2Conv
                 for (int y = 0; y < 2048; y++)
                 {
                     //loop partial scoop
+                    int zz = 0;
                     for (int z = 0; z < nonces[i]; z += limit)
                     {
-                        masterplan[y * loops + z] = new TaskInfo();
-                        masterplan[y * loops + z].reader = scoopReadWriter1;
-                        masterplan[y * loops + z].writer = scoopReadWriter2;
-                        masterplan[y * loops + z].y = y;
-                        masterplan[y * loops + z].z = z;
-                        masterplan[y * loops + z].x = y * loops + z;
-                        masterplan[y * loops + z].limit = limit;
-                        masterplan[y * loops + z].src = src;
-                        masterplan[y * loops + z].tar = tar;
-                        masterplan[y * loops + z].scoop1 = scoop1;
-                        masterplan[y * loops + z].scoop2 = scoop2;
-                        masterplan[y * loops + z].scoop3 = scoop3;
-                        masterplan[y * loops + z].scoop4 = scoop4;
-                        masterplan[y * loops + z].shuffle = true;
-                        masterplan[y * loops + z].end = masterplan.LongLength;
+                        masterplan[y * loops + zz] = new TaskInfo();
+                        masterplan[y * loops + zz].reader = scoopReadWriter1;
+                        masterplan[y * loops + zz].writer = scoopReadWriter2;
+                        masterplan[y * loops + zz].y = y;
+                        masterplan[y * loops + zz].z = z;
+                        masterplan[y * loops + zz].x = y * loops + zz;
+                        masterplan[y * loops + zz].limit = limit;
+                        masterplan[y * loops + zz].src = src;
+                        masterplan[y * loops + zz].tar = tar;
+                        masterplan[y * loops + zz].scoop1 = scoop1;
+                        masterplan[y * loops + zz].scoop2 = scoop2;
+                        masterplan[y * loops + zz].scoop3 = scoop3;
+                        masterplan[y * loops + zz].scoop4 = scoop4;
+                        masterplan[y * loops + zz].shuffle = true;
+                        masterplan[y * loops + zz].end = masterplan.LongLength;
+                        zz += 1;
                     }
                 }
 
