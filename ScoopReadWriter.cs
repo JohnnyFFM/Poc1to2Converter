@@ -13,13 +13,12 @@ namespace poc1poc2Conv
 	{
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern bool SetFileValidData(SafeFileHandle hFile, long ValidDataLength);
-        private BinaryReader _br; 
 		protected string _sFileName;
         protected string _tFileName;
         private long _lLength = -1;
 		protected bool _bOpen = false;
         protected FileStream _fs;
-        protected FileStream _fs2;
+        protected FileStream _ft;
         bool _inline;
         private long _lPosition = 0;
 
@@ -41,8 +40,18 @@ namespace poc1poc2Conv
 
         public void PreAlloc(long totalNonces)
         {
-            _fs2.SetLength(totalNonces * (2 << 17));
-            bool test = SetFileValidData(_fs2.SafeFileHandle, totalNonces * (2 << 17));
+            try
+            {
+                _ft.SetLength(totalNonces * (2 << 17));
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message, "Error Preallocating File", MessageBoxButtons.OK);
+                Close();
+                Application.Exit();
+                return;
+            }
+            bool test = SetFileValidData(_ft.SafeFileHandle, totalNonces * (2 << 17));
             if (!test)
             {
                 DialogResult dialogResult = MessageBox.Show("Elevated file creation failed. File creation will be very slow. Continue?", "Freeze Warning", MessageBoxButtons.YesNo);
@@ -54,11 +63,14 @@ namespace poc1poc2Conv
         }
 
         public void Close()
-		{
-			_bOpen = false;
-			if (!_inline) _br.Close();
-            _fs2.Close();
-			_br = null;
+        {
+            if (_bOpen) { 
+            if (!_inline) _fs.Close();
+            _ft.Close();
+            _fs = null;
+            _ft = null;
+            _bOpen = false;
+            }
 		}
 
 		public bool EOF
@@ -71,29 +83,38 @@ namespace poc1poc2Conv
 
         public void Open()
         {
+
             FileOptions FileFlagNoBuffering = (FileOptions)0x20000000;
-            if (_inline)
+            try
             {
-               
-                _fs2 = new FileStream(_sFileName, FileMode.Open, FileAccess.ReadWrite, FileShare.None,1048576, FileFlagNoBuffering);
-                _br = new BinaryReader(_fs2);
-            }
-            else
-            {
-                if (!Privileges.HasAdminPrivileges)
+                if (_inline)
                 {
-                    DialogResult dialogResult = MessageBox.Show("No elevated file creation possible. File creation will be very slow. Continue?", "Freeze Warning", MessageBoxButtons.YesNo);
-                    if (dialogResult == DialogResult.No)
-                    {
-                        Application.Exit();
-                    }
+                    _fs = new FileStream(_sFileName, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 1048576, FileFlagNoBuffering);
+                    _ft = _fs;
                 }
-                
-                _fs = new FileStream(_sFileName, FileMode.Open, FileAccess.Read, FileShare.Read, 1048576, FileFlagNoBuffering);
-                _fs2 = new FileStream(_tFileName, FileMode.Create, FileAccess.Write, FileShare.None, 1048576, FileFlagNoBuffering);
-                _br = new BinaryReader(_fs);
+                else
+                {
+                    if (!Privileges.HasAdminPrivileges)
+                    {
+                        DialogResult dialogResult = MessageBox.Show("No elevated file creation possible. File creation will be very slow. Continue?", "Freeze Warning", MessageBoxButtons.YesNo);
+                        if (dialogResult == DialogResult.No)
+                        {
+                            Application.Exit();
+                        }
+                    }
+
+                    _fs = new FileStream(_sFileName, FileMode.Open, FileAccess.Read, FileShare.Read, 1048576, FileFlagNoBuffering);
+                    _ft = new FileStream(_tFileName, FileMode.Create, FileAccess.Write, FileShare.None, 1048576, FileFlagNoBuffering);
+                }
             }
-            _lLength = _br.BaseStream.Length;
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message, "Error Opening File", MessageBoxButtons.OK);
+                Close();
+                Application.Exit();
+                return;
+            }
+            _lLength = _fs.Length;
             _lPosition = 0;
             _bOpen = true;
         }
@@ -101,17 +122,55 @@ namespace poc1poc2Conv
         public void ReadScoop(int scoop, long totalNonces, long startNonce, Scoop target, int limit)
 		{
             _lPosition = scoop * (64 * totalNonces) + startNonce * 64;
-            _br.BaseStream.Seek(_lPosition, SeekOrigin.Begin);
-            _br.BaseStream.Read(target.byteArrayField, 0, limit * 64);
-            //target.byteArrayField = _br.ReadBytes(limit * 64);
+            try
+            {
+                _fs.Seek(_lPosition, SeekOrigin.Begin);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show("Scoop: " + scoop.ToString() + " " + e.Message, "I/O Error - Seek to read", MessageBoxButtons.OK);
+                Close();
+                Application.Exit();
+                return;
+            }
+            try
+            {
+                _fs.Read(target.byteArrayField, 0, limit * 64);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show("Scoop: " + scoop.ToString() + " " + e.Message, "I/O Error - Read", MessageBoxButtons.OK);
+                Close();
+                Application.Exit();
+                return;
+            }
             _lPosition += limit * 64;
         }
 
         public void WriteScoop(int scoop, long totalNonces, long startNonce, Scoop source, int limit)
         {
             _lPosition = scoop * (64 * totalNonces) + startNonce * 64;
-            _fs2.Seek(_lPosition, SeekOrigin.Begin);
-            _fs2.Write(source.byteArrayField, 0, limit * 64);
+            try
+            {
+                _ft.Seek(_lPosition, SeekOrigin.Begin);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show("Scoop: "+scoop.ToString()+" "+e.Message, "I/O Error - Seek to write", MessageBoxButtons.OK); 
+                Close();
+                Application.Exit();
+                return;
+            }
+            try { 
+            _ft.Write(source.byteArrayField, 0, limit * 64);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show("Scoop: " + scoop.ToString() + " " + e.Message, "I/O Error - Write", MessageBoxButtons.OK);
+                Close();
+                Application.Exit();
+                return;
+            }
             _lPosition += limit * 64;
         }
 	}
