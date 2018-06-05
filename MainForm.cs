@@ -468,7 +468,7 @@ namespace poc1poc2Conv
             this.MaximizeBox = false;
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Johnny\'s POC1->POC2 Plot Converter v.1.9";
+            this.Text = "Johnny\'s POC1->POC2 Plot Converter v.1.9b";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.grpConverter.ResumeLayout(false);
             this.grpConverter.PerformLayout();
@@ -645,7 +645,7 @@ namespace poc1poc2Conv
         private void Conversion(int[] index, string[] filename, int[] nonces)
         {
             // calc maximum nonces to read (limit)
-            int limit = Convert.ToInt32(memoryLimit.Value) * 8192 -1;
+            int limit = Convert.ToInt32(memoryLimit.Value-1) * 8192;
             //loop all tasks
             for (int i = 0; i < index.Length; i++)
             {
