@@ -733,7 +733,7 @@ namespace poc1poc2Conv
         private void Conversion2(int[] index, string[] filename, int[] nonces)
         {
             // calc maximum nonces to read (limit)
-            int limit = Convert.ToInt32(memoryLimit.Value) * 4096 - 2;
+            int limit = Convert.ToInt32(memoryLimit.Value-1) * 4096;
             //loop all tasks
             for (int i = 0; i < index.Length; i++)
             {
