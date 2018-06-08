@@ -59,7 +59,7 @@ namespace poc1poc2Conv
         private Label outputLabel;
         private CheckBox log;
         private CheckBox fastmode;
-
+        static AutoResetEvent[] autoEvents;
 
         /// <summary>
         /// Required designer variable.
