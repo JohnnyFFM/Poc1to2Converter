@@ -38,7 +38,7 @@ namespace poc1poc2Conv
             _inline = false;
         }
 
-        public void PreAlloc(long totalNonces)
+        public Boolean PreAlloc(long totalNonces)
         {
             try
             {
@@ -47,9 +47,7 @@ namespace poc1poc2Conv
             catch (Exception e)
             {
                 MessageBox.Show(e.Message, "Error Preallocating File", MessageBoxButtons.OK);
-                Close();
-                Application.Exit();
-                return;
+                return false;
             }
             bool test = SetFileValidData(_ft.SafeFileHandle, totalNonces * (2 << 17));
             if (!test)
@@ -57,9 +55,10 @@ namespace poc1poc2Conv
                 DialogResult dialogResult = MessageBox.Show("Elevated file creation failed. File creation will be very slow. Continue?", "Freeze Warning", MessageBoxButtons.YesNo);
                 if (dialogResult == DialogResult.No)
                 {
-                    Application.Exit();
+                    return false;
                 }
             }
+            return true;
         }
 
         public void Close()
@@ -81,7 +80,7 @@ namespace poc1poc2Conv
 			}
 		}
 
-        public void Open()
+        public Boolean Open(bool directIO)
         {
 
             FileOptions FileFlagNoBuffering = (FileOptions)0x20000000;
@@ -89,7 +88,12 @@ namespace poc1poc2Conv
             {
                 if (_inline)
                 {
+                    if (directIO) { 
                     _fs = new FileStream(_sFileName, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 1048576, FileFlagNoBuffering);
+                    }
+                    else {
+                        _fs = new FileStream(_sFileName, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 1048576, FileOptions.SequentialScan | FileOptions.WriteThrough);
+                    }
                     _ft = _fs;
                 }
                 else
@@ -102,24 +106,37 @@ namespace poc1poc2Conv
                             Application.Exit();
                         }
                     }
-
-                    _fs = new FileStream(_sFileName, FileMode.Open, FileAccess.Read, FileShare.Read, 1048576, FileFlagNoBuffering);
-                    _ft = new FileStream(_tFileName, FileMode.Create, FileAccess.Write, FileShare.None, 1048576, FileFlagNoBuffering);
+                    if (directIO)
+                    {
+                        _fs = new FileStream(_sFileName, FileMode.Open, FileAccess.Read, FileShare.Read, 1048576, FileFlagNoBuffering);
+                        _ft = new FileStream(_tFileName, FileMode.Create, FileAccess.Write, FileShare.None, 1048576, FileFlagNoBuffering);
+                    }
+                    else
+                    {
+                        _fs = new FileStream(_sFileName, FileMode.Open, FileAccess.Read, FileShare.Read, 1048576, FileOptions.SequentialScan);
+                        _ft = new FileStream(_tFileName, FileMode.Create, FileAccess.Write, FileShare.None, 1048576, FileOptions.WriteThrough);
+                    }
                 }
             }
             catch (Exception e)
             {
-                MessageBox.Show(e.Message, "Error Opening File", MessageBoxButtons.OK);
-                Close();
-                Application.Exit();
-                return;
+                //MessageBox.Show(e.Message, "Error Opening File", MessageBoxButtons.OK);
+                if(_fs != null) _fs.Close();
+                if(_ft != null) _ft.Close();
+                return false;
             }
             _lLength = _fs.Length;
             _lPosition = 0;
             _bOpen = true;
+            return true;
         }
 
-        public void ReadScoop(int scoop, long totalNonces, long startNonce, Scoop target, int limit)
+        public Boolean isOpen()
+        {
+            return _bOpen;
+        }
+
+        public Boolean ReadScoop(int scoop, long totalNonces, long startNonce, Scoop target, int limit)
 		{
             _lPosition = scoop * (64 * totalNonces) + startNonce * 64;
             try
@@ -129,9 +146,7 @@ namespace poc1poc2Conv
             catch (Exception e)
             {
                 MessageBox.Show("Scoop: " + scoop.ToString() + " " + e.Message, "I/O Error - Seek to read", MessageBoxButtons.OK);
-                Close();
-                Application.Exit();
-                return;
+                return false;
             }
             try
             {
@@ -140,14 +155,13 @@ namespace poc1poc2Conv
             catch (Exception e)
             {
                 MessageBox.Show("Scoop: " + scoop.ToString() + " " + e.Message, "I/O Error - Read", MessageBoxButtons.OK);
-                Close();
-                Application.Exit();
-                return;
+                return false;
             }
             _lPosition += limit * 64;
+            return true;
         }
 
-        public void WriteScoop(int scoop, long totalNonces, long startNonce, Scoop source, int limit)
+        public Boolean WriteScoop(int scoop, long totalNonces, long startNonce, Scoop source, int limit)
         {
             _lPosition = scoop * (64 * totalNonces) + startNonce * 64;
             try
@@ -157,9 +171,7 @@ namespace poc1poc2Conv
             catch (Exception e)
             {
                 MessageBox.Show("Scoop: "+scoop.ToString()+" "+e.Message, "I/O Error - Seek to write", MessageBoxButtons.OK); 
-                Close();
-                Application.Exit();
-                return;
+                return false;
             }
             try { 
             _ft.Write(source.byteArrayField, 0, limit * 64);
@@ -167,11 +179,10 @@ namespace poc1poc2Conv
             catch (Exception e)
             {
                 MessageBox.Show("Scoop: " + scoop.ToString() + " " + e.Message, "I/O Error - Write", MessageBoxButtons.OK);
-                Close();
-                Application.Exit();
-                return;
+                return false;
             }
             _lPosition += limit * 64;
+            return true;
         }
 	}
     public static class Privileges

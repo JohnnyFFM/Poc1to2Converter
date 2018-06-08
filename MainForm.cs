@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using System.Data;
 using System.Threading;
 using System.Text.RegularExpressions;
+using System.Runtime.InteropServices;
 
 
 namespace poc1poc2Conv
@@ -14,8 +15,12 @@ namespace poc1poc2Conv
     /// <summary>
     /// Summary description for Form1.
     /// </summary>
+
     public class MainForm : System.Windows.Forms.Form
     {
+        [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Auto)]
+        public static extern int GetDiskFreeSpace(string lpRootPathName, out int lpSectorsPerCluster, out int lpBytesPerSector, out int lpNumberOfFreeClusters, out int lpTotalNumberOfClusters);
+
         private GroupBox grpConverter;
         private Button btnAddFile;
         private ListView plotFileList;
@@ -52,6 +57,8 @@ namespace poc1poc2Conv
         private Button btnBrowse;
         private TextBox outputDir;
         private Label outputLabel;
+        private CheckBox log;
+
 
         /// <summary>
         /// Required designer variable.
@@ -68,6 +75,7 @@ namespace poc1poc2Conv
             //Fill command line parameter
             memoryLimit.Value = memlimit;
             if (startscoop != 0) { btnConversion.Text = "Start Repair"; }
+            if (logging) log.Checked = true;
             if (sourcefile != "") addFile(sourcefile);
             if (sourcedir != "") addDir(sourcedir);
             if (targetdir != "") outputDir.Text = targetdir;
@@ -101,6 +109,7 @@ namespace poc1poc2Conv
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.grpConverter = new System.Windows.Forms.GroupBox();
+            this.log = new System.Windows.Forms.CheckBox();
             this.btnBrowse = new System.Windows.Forms.Button();
             this.outputDir = new System.Windows.Forms.TextBox();
             this.outputLabel = new System.Windows.Forms.Label();
@@ -143,8 +152,9 @@ namespace poc1poc2Conv
             // 
             // grpConverter
             // 
-            this.grpConverter.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.grpConverter.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.grpConverter.Controls.Add(this.log);
             this.grpConverter.Controls.Add(this.btnBrowse);
             this.grpConverter.Controls.Add(this.outputDir);
             this.grpConverter.Controls.Add(this.outputLabel);
@@ -164,6 +174,16 @@ namespace poc1poc2Conv
             this.grpConverter.TabIndex = 11;
             this.grpConverter.TabStop = false;
             this.grpConverter.Text = "Sequential Plot File Conversion (POC1 --> POC2)";
+            // 
+            // log
+            // 
+            this.log.AutoSize = true;
+            this.log.Location = new System.Drawing.Point(553, 26);
+            this.log.Name = "log";
+            this.log.Size = new System.Drawing.Size(91, 17);
+            this.log.TabIndex = 24;
+            this.log.Text = "Create Logfile";
+            this.log.UseVisualStyleBackColor = true;
             // 
             // btnBrowse
             // 
@@ -284,8 +304,8 @@ namespace poc1poc2Conv
             // 
             // plotFileList
             // 
-            this.plotFileList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.plotFileList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.plotFileList.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader2,
@@ -355,7 +375,7 @@ namespace poc1poc2Conv
             // 
             // grpStatus
             // 
-            this.grpStatus.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.grpStatus.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.grpStatus.Controls.Add(this.label1);
             this.grpStatus.Controls.Add(this.textBox2);
@@ -396,8 +416,8 @@ namespace poc1poc2Conv
             // 
             // statusList
             // 
-            this.statusList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.statusList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.statusList.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader10,
@@ -473,7 +493,7 @@ namespace poc1poc2Conv
             this.MaximizeBox = false;
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Johnny\'s POC1->POC2 Plot Converter v.1.81";
+            this.Text = "Johnny\'s POC1->POC2 Plot Converter v.2.0";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.grpConverter.ResumeLayout(false);
             this.grpConverter.PerformLayout();
@@ -489,6 +509,7 @@ namespace poc1poc2Conv
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
+        public static Boolean logging = false;       //disable direct IO
         public static Boolean ddio = false;       //disable direct IO
         private static Boolean autostart = false;  //autostart conversion
         private static string sourcefile = "";  //add plot file via command line
@@ -496,10 +517,21 @@ namespace poc1poc2Conv
         private static string targetdir = "";   //set output dir via command line
         private static int memlimit = 4096;     //memory limit
         private static int startscoop = 0;     //scoop to start at (in case of a unwanted interruption)
+        private static string logfile = "";   //logfile
+        private static Boolean halt;         //halt conversion after current file
+        private static Boolean stop;         //stop conversion after error
+      
+
+        static void logIT(string e)
+        {
+            File.AppendAllText(System.Environment.CurrentDirectory + "\\" + logfile , e + "\r\n");
+        }
 
         [STAThread]
         static void Main(string[] args)
         {
+
+            logfile = string.Format(@"PoC1PoC2Converter_{0}.log", Guid.NewGuid());
 
             //parse arguments
             for (int i = 0; i < args.Length; i++) {
@@ -509,8 +541,13 @@ namespace poc1poc2Conv
                     sourcedir = (args[i].ToString());
                 if ((args[i] == "-tardir") && (args[++i]) is string)
                     targetdir = (args[i].ToString());
-                if (args[i] == "-startscoop") int.TryParse(args[++i], out startscoop);
+                if (args[i] == "-startscoop")
+                {
+                    int.TryParse(args[++i], out startscoop);
+                    startscoop = Math.Max(0, Math.Min(2047, startscoop));
+                }
                 if (args[i] == "-ddio") ddio = true;
+                if (args[i] == "-log") logging = true;
                 if (args[i] == "-autostart") autostart = true;
                 if (args[i] == "-mem")
                 {
@@ -602,6 +639,8 @@ namespace poc1poc2Conv
 
         private void button4_Click(object sender, EventArgs e)
         {
+            halt = false;
+            stop = false;
             if (outputDir.Text == "")
             {
                 DialogResult dialogResult = MessageBox.Show("Do you want to start a inline conversion of your files? Process can't be stopped! Stopping will damage your Plot-Files. Are you sure?", "Inline Conversion Warning", MessageBoxButtons.YesNo);
@@ -667,13 +706,26 @@ namespace poc1poc2Conv
             //loop all tasks
             for (int i = 0; i < index.Length; i++)
             {
+                if (halt)
+                {
+                    setStatus(index[i], 2, "Halt requested. Skipped!");
+                    continue;
+                }
+                if (stop)
+                {
+                    setStatus(index[i], 2, "Skipped file!");
+                    continue;
+                }
+                if (log.Checked) logIT("Processing file: "+filename[i]);
                 DateTime start = DateTime.Now;
                 TimeSpan elapsed;
                 TimeSpan togo;
                 //allocate memory
+                if (log.Checked) logIT("Allocating Memory...");
                 Scoop scoop1 = new Scoop(Math.Min(nonces[i], limit));  //space needed for one partial scoop
                 Scoop scoop2 = new Scoop(Math.Min(nonces[i], limit));  //space needed for one partial scoop
                 //Create and open Reader/Writer
+                if (log.Checked) logIT("Opening File(s)...");
                 ScoopReadWriter scoopReadWriter;
                 if (outputDir.Text == "")  //inline
                 {
@@ -683,45 +735,115 @@ namespace poc1poc2Conv
                 {
                     scoopReadWriter = new ScoopReadWriter(filename[i], outputDir.Text + "\\" + Path.GetFileName(filename[i]).Replace(nonces[i].ToString() + "_" + nonces[i].ToString(), nonces[i].ToString()));
                 }
-                scoopReadWriter.Open();
+                if (ddio) {
+                    if (log.Checked) logIT("Direct I/O disabled by default.");
+                    scoopReadWriter.Open(!ddio);
+                }
+                else
+                {
+                    //checks if direct I/O would fail
+                    int SectorsPerCluster;
+                    int BytesPerSector;
+                    int NumberOfFreeClusters;
+                    int TotalNumberOfClusters; 
+                    FileInfo file = new FileInfo(filename[i]);
+                    DriveInfo drive = new DriveInfo(file.Directory.Root.FullName);
+                    GetDiskFreeSpace(drive.Name, out SectorsPerCluster, out BytesPerSector, out NumberOfFreeClusters, out TotalNumberOfClusters);
+
+                    if (nonces[i] % (BytesPerSector/64)!= 0)
+                    {
+                        if (log.Checked) logIT("Direct I/O disabled.");
+                        scoopReadWriter.Open(false);
+                    }
+                    else
+                    {
+                        if (log.Checked) logIT("Direct I/O enabled.");
+                        scoopReadWriter.Open(true);
+                    }
+                }
+                
+                //skip file if opening fails
+                if (!scoopReadWriter.isOpen())
+                {
+                    if (log.Checked) logIT("Error: Can_t open file, skipped.");
+                    setStatus(index[i], 2, "Skipped! Error opening file.");
+                    continue;
+                }
 
                 //prealloc disk space
                 if (outputDir.Text != "")
                 {
-                    scoopReadWriter.PreAlloc(nonces[i]);
+                    if (!scoopReadWriter.PreAlloc(nonces[i])){
+                        if (log.Checked) logIT("Error allocating disk space.");
+                        setStatus(index[i], 2, "Skipped! Error allocating disk space.");
+                        continue;
+                    }
                 }
 
                 //loop scoop pairs
                 for (int y = startscoop; y < 2048; y++)
                 {
+                    if (stop) break;
                     setStatus(index[i], 2, "Processing Scoop Pairs " + (y + 1).ToString() + "/2048");
                     Application.DoEvents();
                     //loop partial scoop
                     for (int z = 0; z < nonces[i]; z += limit)
                     {
-                        scoopReadWriter.ReadScoop(y, nonces[i], z, scoop1, Math.Min(nonces[i] - z, limit));
-                        scoopReadWriter.ReadScoop(4095 - y, nonces[i], z, scoop2, Math.Min(nonces[i] - z, limit));
+                        if (log.Checked) logIT("Processing Scoop Pair: "+y.ToString());
+                        stop = stop || !scoopReadWriter.ReadScoop(y, nonces[i], z, scoop1, Math.Min(nonces[i] - z, limit));
+                        if (stop)
+                        {
+                            if (log.Checked) logIT("ERROR! Error reading front scoop : " + y.ToString());
+                            setStatus(index[i], 2, "ERROR! Error reading front scoop : "+y.ToString());
+                            break;
+                        }
+                        stop = stop || !scoopReadWriter.ReadScoop(4095 - y, nonces[i], z, scoop2, Math.Min(nonces[i] - z, limit));
+                        if (stop)
+                        {
+                            if (log.Checked) logIT("ERROR! Error reading back scoop : " + y.ToString());
+                            setStatus(index[i], 2, "ERROR! Error reading back scoop : " + y.ToString());
+                            break;
+                        }
                         Poc1poc2shuffle(scoop1, scoop2, Math.Min(nonces[i] - z, limit));
-                        scoopReadWriter.WriteScoop(4095 - y, nonces[i], z, scoop2, Math.Min(nonces[i] - z, limit));
-                        scoopReadWriter.WriteScoop(y, nonces[i], z, scoop1, Math.Min(nonces[i] - z, limit));
+                        stop = stop || !scoopReadWriter.WriteScoop(4095 - y, nonces[i], z, scoop2, Math.Min(nonces[i] - z, limit));
+                        if (stop)
+                        {
+                            if (log.Checked) logIT("ERROR! Error writing back scoop : " + y.ToString());
+                            setStatus(index[i], 2, "ERROR! Error writing back scoop : " + y.ToString());
+                            break;
+                        }
+                        stop = stop || !scoopReadWriter.WriteScoop(y, nonces[i], z, scoop1, Math.Min(nonces[i] - z, limit));
+                        if (stop)
+                        {
+                            if (log.Checked) logIT("ERROR! Error writing front scoop : " + y.ToString());
+                            setStatus(index[i], 2, "ERROR! Error writing front scoop : " + y.ToString());
+                            break;
+                        }
                     }
                     //update status
-                    elapsed = DateTime.Now.Subtract(start);
-                    togo = TimeSpan.FromTicks(elapsed.Ticks / (y + 1) * (2048 - y - 1));
-                    setStatus(index[i], 3, Math.Round((double)(y + 1) / 2048 * 100).ToString() + "%");
-                    setStatus(index[i], 4, timeSpanToString(elapsed));
-                    setStatus(index[i], 5, timeSpanToString(togo));
-
+                    if (!stop)
+                    {
+                        elapsed = DateTime.Now.Subtract(start);
+                        togo = TimeSpan.FromTicks(elapsed.Ticks / (y - startscoop + 1) * (2048 - y - 1));
+                        setStatus(index[i], 3, Math.Round((double)(y + 1) / 2048 * 100).ToString() + "%");
+                        setStatus(index[i], 4, timeSpanToString(elapsed));
+                        setStatus(index[i], 5, timeSpanToString(togo));
+                    }
                 }
                 // close reader/writer
                 scoopReadWriter.Close();
-                // rename file
-                if (outputDir.Text == "")
-                    System.IO.File.Move(filename[i], filename[i].Replace(nonces[i].ToString() + "_" + nonces[i].ToString(), nonces[i].ToString()));
-                // update status
-                setStatus(index[i], 2, "Plot successfully converted.");
-
+                if (!stop)
+                {
+                    if (log.Checked) logIT("Renaming File...");
+                    // rename file
+                    if (outputDir.Text == "")
+                        System.IO.File.Move(filename[i], filename[i].Replace(nonces[i].ToString() + "_" + nonces[i].ToString(), nonces[i].ToString()));
+                    // update status
+                    if (log.Checked) logIT("Plot successfully converted.");
+                    setStatus(index[i], 2, "Plot successfully converted.");
+                }
                 //free memory
+                if (log.Checked) logIT("Releasing Memory.");
                 scoop1 = null;
                 scoop2 = null;
                 GC.Collect();
@@ -839,14 +961,15 @@ namespace poc1poc2Conv
         {
             if (!btnConversion.Enabled) {
                 if (outputDir.Text == "") {
-                    var window = MessageBox.Show("Inline Conversion in progress! Closing the app will destroy your plot file. Are you sure?", "Warning!", MessageBoxButtons.YesNo);
-                    e.Cancel = (window == DialogResult.No); }
+                    var window = MessageBox.Show("Inline Conversion in progress! Closing the app will destroy your plot file. Are you sure?\n (Yes = Close Converter, No = Stop after current file is converted, Cancel=Continue)", "Warning!", MessageBoxButtons.YesNoCancel);
+                    halt = (window == DialogResult.No);
+                    e.Cancel = (window != DialogResult.Yes); }
                 else {
-                    var window = MessageBox.Show("Conversion in progress! Closing the app will destroy your target plot file. Are you sure?", "Warning!", MessageBoxButtons.YesNo);
-                    e.Cancel = (window == DialogResult.No);
+                    var window = MessageBox.Show("Conversion in progress! Closing the app will destroy your target plot file. Are you sure?\n (Yes = Close Converter, No = Stop after current file is converted, Cancel=Continue)", "Warning!", MessageBoxButtons.YesNoCancel);
+                    halt = (window == DialogResult.No);
+                    e.Cancel = (window != DialogResult.Yes);
                 }
             }
-        
         }
     }
 
