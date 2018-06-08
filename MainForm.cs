@@ -581,7 +581,7 @@ namespace poc1poc2Conv
             string[] pfn = temp[temp.GetLength(0) - 1].Split('_');
             plotfile result;
             result.id = Convert.ToUInt64(pfn[0]);
-            result.start = Convert.ToUInt64(pfn[1]);
+            result.start = Convert.ToUInt32(pfn[1]);
             result.nonces = Convert.ToInt64(pfn[2]);
             result.stagger = Convert.ToInt64(pfn[3]);
             return result;
@@ -627,7 +627,7 @@ namespace poc1poc2Conv
                         item.Name = file;
                         item.SubItems.Add(temp.id.ToString());
                         item.SubItems.Add(temp.start.ToString());
-                        item.SubItems.Add((temp.start + Convert.ToUInt64(temp.nonces) - 1).ToString());
+                        item.SubItems.Add((temp.start + Convert.ToUInt32(temp.nonces) - 1).ToString());
                         item.SubItems.Add(temp.nonces.ToString());
                         item.SubItems.Add(temp.stagger.ToString());
                         item.SubItems.Add(prettyBytes(length));
@@ -1121,7 +1121,7 @@ namespace poc1poc2Conv
             item.Name = file;
             item.SubItems.Add(temp.id.ToString());
             item.SubItems.Add(temp.start.ToString());
-            item.SubItems.Add((temp.start + Convert.ToUInt64(temp.nonces) - 1).ToString());
+            item.SubItems.Add((temp.start + Convert.ToUInt32(temp.nonces) - 1).ToString());
             item.SubItems.Add(temp.nonces.ToString());
             item.SubItems.Add(temp.stagger.ToString());
             item.SubItems.Add(prettyBytes(length));
@@ -1157,7 +1157,7 @@ namespace poc1poc2Conv
     struct plotfile
     {
         public ulong id;
-        public ulong start;
+        public long start;
         public long nonces;
         public long stagger;
     }
