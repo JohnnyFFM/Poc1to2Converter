@@ -2,6 +2,7 @@
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Windows.Forms;
 using Microsoft.Win32.SafeHandles;
 
 namespace poc1poc2Conv
@@ -32,44 +33,139 @@ namespace poc1poc2Conv
             _fs.Close();
         }
 
-        public void OpenR()
+        public Boolean OpenR(bool directIO)
         {
-            _fs = new FileStream(_FileName, FileMode.Open, FileAccess.Read, FileShare.Read, 1048576, FileFlagNoBuffering);
+            try
+            {
+                if (directIO)
+                {
+                    _fs = new FileStream(_FileName, FileMode.Open, FileAccess.Read, FileShare.Read, 1048576, FileFlagNoBuffering);
+                }
+                else
+                {
+                    _fs = new FileStream(_FileName, FileMode.Open, FileAccess.Read, FileShare.Read, 1048576, FileOptions.SequentialScan);
+                }
+            }
+            catch (Exception e)
+            {
+                //MessageBox.Show(e.Message, "Error Opening File", MessageBoxButtons.OK);
+                if (_fs != null) _fs.Close();
+                return false;
+            }
             _lPosition = 0;
             _bOpen = true;
+            return true;
         }
 
-        public void OpenW()
+        public Boolean OpenW(bool directIO)
         {
-            //assert priviliges
-            if (!Privileges.HasAdminPrivileges) Console.WriteLine("INFO: Missing Priviledge, File creation will take a while...");
-            _fs = new FileStream(_FileName, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None, 1048576, FileFlagNoBuffering);
+            try
+            {
+                //assert priviliges
+                _fs = new FileStream(_FileName, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None, 1048576, FileFlagNoBuffering);
+
+                if (!Privileges.HasAdminPrivileges)
+                {
+                    DialogResult dialogResult = MessageBox.Show("No elevated file creation possible. File creation will be very slow. Continue?", "Freeze Warning", MessageBoxButtons.YesNo);
+                    if (dialogResult == DialogResult.No)
+                    {
+                        Application.Exit();
+                    }
+                }
+                if (directIO)
+                {
+                    _fs = new FileStream(_FileName, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None, 1048576, FileFlagNoBuffering);
+                }
+                else
+                {
+                    _fs = new FileStream(_FileName, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None, 1048576, FileOptions.WriteThrough);
+                }
+            }catch (Exception e)
+            {
+                //MessageBox.Show(e.Message, "Error Opening File", MessageBoxButtons.OK);
+                if (_fs != null) _fs.Close();
+                return false;
+            }
             _lPosition = 0;
             _lLength = _fs.Length;
             _bOpen = true;
+            return true;
         }
 
-        public void ReadScoop(int scoop, long totalNonces, long startNonce, Scoop target, int limit)
+        public Boolean isOpen()
+        {
+            return _bOpen;
+        }
+
+        public Boolean ReadScoop(int scoop, long totalNonces, long startNonce, Scoop target, int limit)
         {
             _lPosition = scoop * (64 * totalNonces) + startNonce * 64;
-            _fs.Seek(_lPosition, SeekOrigin.Begin);
+            try {
+                _fs.Seek(_lPosition, SeekOrigin.Begin);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show("Scoop: " + scoop.ToString() + " " + e.Message, "I/O Error - Seek to read", MessageBoxButtons.OK);
+                return false;
+            }
+            try { 
             _fs.Read(target.byteArrayField, 0, limit * 64);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show("Scoop: " + scoop.ToString() + " " + e.Message, "I/O Error - Read", MessageBoxButtons.OK);
+                return false;
+            }
             _lPosition += limit * 64;
+            return true;
         }
 
-        public void WriteScoop(int scoop, long totalNonces, long startNonce, Scoop source, int limit)
+        public Boolean WriteScoop(int scoop, long totalNonces, long startNonce, Scoop source, int limit)
         {
             _lPosition = scoop * (64 * totalNonces) + startNonce * 64;
-            _fs.Seek(_lPosition, SeekOrigin.Begin);
-            _fs.Write(source.byteArrayField, 0, limit * 64);
+            try
+            {
+                _fs.Seek(_lPosition, SeekOrigin.Begin);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show("Scoop: " + scoop.ToString() + " " + e.Message, "I/O Error - Seek to write", MessageBoxButtons.OK);
+                return false;
+            }
+            try
+            {
+                _fs.Write(source.byteArrayField, 0, limit * 64);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show("Scoop: " + scoop.ToString() + " " + e.Message, "I/O Error - Write", MessageBoxButtons.OK);
+                return false;
+            }
             _lPosition += limit * 64;
+            return true;
         }
 
-        public void PreAlloc(long totalNonces)
+        public Boolean PreAlloc(long totalNonces)
         {
-            _fs.SetLength(totalNonces * (2 << 17));
+            try
+            {
+                _fs.SetLength(totalNonces * (2 << 17));
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message, "Error Preallocating File", MessageBoxButtons.OK);
+                return false;
+            }
             bool test = SetFileValidData(_fs.SafeFileHandle, totalNonces * (2 << 17));
-            if (!test) Console.WriteLine("INFO: Quick File creation failed. File creation will take a while...");
+            if (!test)
+            {
+                DialogResult dialogResult = MessageBox.Show("Elevated file creation failed. File creation will be very slow. Continue?", "Freeze Warning", MessageBoxButtons.YesNo);
+                if (dialogResult == DialogResult.No)
+                {
+                    return false;
+                }
+            }
+            return true;
         }
     }
   

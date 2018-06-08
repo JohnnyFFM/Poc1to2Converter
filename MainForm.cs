@@ -571,9 +571,10 @@ namespace poc1poc2Conv
                     memlimit = Math.Max(96, Math.Min(4096, memlimit));
                 }
             }
-            Application.Run(new MainForm());
+            mf = new MainForm();
+            Application.Run(mf);
         }
-
+        public static MainForm mf = null;
 
         private plotfile parsePlotFileName(string name)
         {
@@ -888,10 +889,22 @@ namespace poc1poc2Conv
             //loop all tasks
             for (int i = 0; i < index.Length; i++)
             {
+                if (halt)
+                {
+                    setStatus(index[i], 2, "Halt requested. Skipped!");
+                    continue;
+                }
+                if (stop)
+                {
+                    setStatus(index[i], 2, "Skipped file!");
+                    continue;
+                }
+                if (log.Checked) logIT("Processing file: " + filename[i]);
                 DateTime start = DateTime.Now;
                 TimeSpan elapsed;
                 TimeSpan togo;
                 //allocate memory
+                if (log.Checked) logIT("Allocating Memory...");
                 Scoop scoop1 = new Scoop(Math.Min(nonces[i], limit));  //space needed for one partial scoop
                 Scoop scoop2 = new Scoop(Math.Min(nonces[i], limit));  //space needed for one partial scoop
                 Scoop scoop3 = new Scoop(Math.Min(nonces[i], limit));  //space needed for one partial scoop
@@ -900,19 +913,59 @@ namespace poc1poc2Conv
                 plotfile src = parsePlotFileName(filename[i]);
                 plotfile tar = parsePlotFileName(outputDir.Text + "\\" + Path.GetFileName(filename[i]).Replace(nonces[i].ToString() + "_" + nonces[i].ToString(), nonces[i].ToString()));
 
-
                 //Create and open Reader/Writer
+                if (log.Checked) logIT("Opening File(s)...");
+                string newfilename = outputDir.Text + "\\" + Path.GetFileName(filename[i]).Replace(nonces[i].ToString() + "_" + nonces[i].ToString(), nonces[i].ToString());
+
+                //check source and target for direct IO
+                int SectorsPerCluster;
+                int BytesPerSectorA;
+                int BytesPerSectorB;
+                int NumberOfFreeClusters;
+                int TotalNumberOfClusters;
+                FileInfo file = new FileInfo(filename[i]);
+                DriveInfo drive = new DriveInfo(file.Directory.Root.FullName);
+                GetDiskFreeSpace(drive.Name, out SectorsPerCluster, out BytesPerSectorA, out NumberOfFreeClusters, out TotalNumberOfClusters);
+                file = new FileInfo(newfilename);
+                drive = new DriveInfo(file.Directory.Root.FullName);
+                GetDiskFreeSpace(drive.Name, out SectorsPerCluster, out BytesPerSectorB, out NumberOfFreeClusters, out TotalNumberOfClusters);
+
                 ScoopReadWriterX scoopReadWriter1;
                 scoopReadWriter1 = new ScoopReadWriterX(filename[i]);
-                scoopReadWriter1.OpenR();
 
                 ScoopReadWriterX scoopReadWriter2;
-                scoopReadWriter2 = new ScoopReadWriterX(outputDir.Text + "\\" + Path.GetFileName(filename[i]).Replace(nonces[i].ToString() + "_" + nonces[i].ToString(), nonces[i].ToString()));
-                scoopReadWriter2.OpenW();
+                scoopReadWriter2 = new ScoopReadWriterX(newfilename);
+
+                if (ddio || (nonces[i] % (BytesPerSectorA / 64) != 0) || (nonces[i] % (BytesPerSectorB / 64) != 0))
+                {
+                    scoopReadWriter1.OpenR(false);
+                    if (scoopReadWriter1.isOpen()) scoopReadWriter2.OpenW(false);
+                }
+                else
+                {
+                    scoopReadWriter1.OpenR(true);
+                    if (scoopReadWriter1.isOpen()) scoopReadWriter2.OpenW(true);
+                }
+
+                //skip file if opening fails
+                if (!scoopReadWriter2.isOpen())
+                {
+                    if (scoopReadWriter1.isOpen())
+                        scoopReadWriter1.Close();
+                    {
+                    }
+                    if (log.Checked) logIT("Error: Can't open file(s), skipped.");
+                    setStatus(index[i], 2, "Skipped! Error opening file(s).");
+                    continue;
+                }
 
                 //prealloc disk space
-                scoopReadWriter2.PreAlloc(nonces[i]);
-
+                if (!scoopReadWriter2.PreAlloc(nonces[i]))
+                {
+                    if (log.Checked) logIT("Error allocating disk space.");
+                    setStatus(index[i], 2, "Skipped! Error allocating disk space.");
+                    continue;
+                }
 
                 //create taskplan
                 int loops = (int)Math.Ceiling((double)(nonces[i]) / limit);
@@ -944,9 +997,9 @@ namespace poc1poc2Conv
                     }
                 }
 
-
                 //work masterplan
                 //perform first read
+                if (log.Checked) logIT("Processing Scoop Pair: 0");
                 Th_read(masterplan[0]);
 
                 autoEvents = new AutoResetEvent[]
@@ -958,12 +1011,18 @@ namespace poc1poc2Conv
                 for (long x = 1; x < masterplan.LongLength; x++)
                 {
                     setStatus(index[i], 2, "Processing Scoop Pairs " + (masterplan[x].y + 1).ToString() + "/2048");
+                    if (log.Checked) logIT("Processing Scoop Pair: " + (masterplan[x].y + 1).ToString());
                     Application.DoEvents();
 
                     ThreadPool.QueueUserWorkItem(new WaitCallback(Th_write), masterplan[x - 1]);
                     ThreadPool.QueueUserWorkItem(new WaitCallback(Th_read), masterplan[x]);
                     WaitHandle.WaitAll(autoEvents);
-
+                    if (stop)
+                    {
+                        if (log.Checked) logIT("ERROR! processing disk-to-disk. Scoop  " + masterplan[x].y.ToString());
+                        setStatus(index[i], 2, "ERROR! processing disk-to-disk. Scoop  " + masterplan[x].y.ToString());
+                        break;
+                    }
                     //update status
                     elapsed = DateTime.Now.Subtract(start);
                     togo = TimeSpan.FromTicks(elapsed.Ticks / (masterplan[x].y + 1) * (2048 - masterplan[x].y - 1));
@@ -972,18 +1031,21 @@ namespace poc1poc2Conv
                     setStatus(index[i], 5, timeSpanToString(togo));
                 }
                 //perform last write
-                Th_write(masterplan[masterplan.LongLength - 1]);
-
+                if (!stop) Th_write(masterplan[masterplan.LongLength - 1]);
 
                 // close reader/writer
                 scoopReadWriter1.Close();
                 scoopReadWriter2.Close();
 
-
                 // update status
-                setStatus(index[i], 2, "Plot successfully converted.");
-
+                if (!stop)
+                {
+                    setStatus(index[i], 2, "Plot successfully converted.");
+                    if (log.Checked) logIT("Plot successfully converted.");
+                }
+                      
                 //free memory
+                if (log.Checked) logIT("Releasing Memory.");
                 scoop1 = null;
                 scoop2 = null;
                 scoop3 = null;
@@ -995,38 +1057,92 @@ namespace poc1poc2Conv
         public static void Th_read(object stateInfo)
         {
             TaskInfo ti = (TaskInfo)stateInfo;
-
+            Boolean ret;
             //determine cache cycle and front scoop back scoop cycle to alternate
             if (ti.x % 2 == 0)
             {
-                ti.reader.ReadScoop(ti.y, ti.src.nonces, ti.z, ti.scoop1, Math.Min((int)ti.src.nonces - ti.z, ti.limit));
-                ti.reader.ReadScoop(4095 - ti.y, ti.src.nonces, ti.z, ti.scoop2, Math.Min((int)ti.src.nonces - ti.z, ti.limit));
+                ret = ti.reader.ReadScoop(ti.y, ti.src.nonces, ti.z, ti.scoop1, Math.Min((int)ti.src.nonces - ti.z, ti.limit));
+                if (!ret)
+                {
+                    lock (mf)
+                    {
+                        stop = stop || !ret;
+                        if (ti.x != 0) autoEvents[0].Set();
+                        return;
+                    }
+                }
+                ret = ti.reader.ReadScoop(4095 - ti.y, ti.src.nonces, ti.z, ti.scoop2, Math.Min((int)ti.src.nonces - ti.z, ti.limit));
+                if (!ret)
+                {
+                    lock (mf)
+                    {
+                        stop = stop || !ret;
+                        if (ti.x != 0) autoEvents[0].Set();
+                        return;
+                    }
+                }
                 if (ti.shuffle) Poc1poc2shuffle(ti.scoop1, ti.scoop2, Math.Min((int)ti.src.nonces - ti.z, ti.limit));
             }
             else
             {
-                ti.reader.ReadScoop(4095 - ti.y, ti.src.nonces, ti.z, ti.scoop4, Math.Min((int)ti.src.nonces - ti.z, ti.limit));
-                ti.reader.ReadScoop(ti.y, ti.src.nonces, ti.z, ti.scoop3, Math.Min((int)ti.src.nonces - ti.z, ti.limit));
+                ret = ti.reader.ReadScoop(4095 - ti.y, ti.src.nonces, ti.z, ti.scoop4, Math.Min((int)ti.src.nonces - ti.z, ti.limit));
+                if (!ret)
+                {
+                    lock (mf)
+                    {
+                        stop = stop || !ret;
+                        if (ti.x != 0) autoEvents[0].Set();
+                        return;
+                    }
+                }
+                ret = ti.reader.ReadScoop(ti.y, ti.src.nonces, ti.z, ti.scoop3, Math.Min((int)ti.src.nonces - ti.z, ti.limit));
+                if (!ret)
+                {
+                    lock (mf)
+                    {
+                        stop = stop || !ret;
+                        if (ti.x != 0) autoEvents[0].Set();
+                        return;
+                    }
+                }
                 if (ti.shuffle) Poc1poc2shuffle(ti.scoop3, ti.scoop4, Math.Min((int)ti.src.nonces - ti.z, ti.limit));
             }
             if (ti.x != 0) autoEvents[0].Set();
-
         }
 
         public static void Th_write(object stateInfo)
         {
             TaskInfo ti = (TaskInfo)stateInfo;
+            Boolean ret;
             if (ti.x % 2 == 0)
             {
-                ti.writer.WriteScoop(ti.y, ti.tar.nonces, ti.z + ti.src.start - ti.tar.start, ti.scoop1, Math.Min((int)ti.src.nonces - ti.z, ti.limit));
-                ti.writer.WriteScoop(4095 - ti.y, ti.tar.nonces, ti.z + ti.src.start - ti.tar.start, ti.scoop2, Math.Min((int)ti.src.nonces - ti.z, ti.limit));
+                ret = ti.writer.WriteScoop(ti.y, ti.tar.nonces, ti.z + ti.src.start - ti.tar.start, ti.scoop1, Math.Min((int)ti.src.nonces - ti.z, ti.limit));
+                ret = ti.writer.WriteScoop(4095 - ti.y, ti.tar.nonces, ti.z + ti.src.start - ti.tar.start, ti.scoop2, Math.Min((int)ti.src.nonces - ti.z, ti.limit));
+                if (!ret)
+                {
+                    lock (mf)
+                    {
+                        stop = stop || !ret;
+                        if (ti.x != 0) autoEvents[1].Set();
+                        return;
+                    }
+                }
             }
             else
             {
-                ti.writer.WriteScoop(4095 - ti.y, ti.tar.nonces, ti.z + ti.src.start - ti.tar.start, ti.scoop4, Math.Min((int)ti.src.nonces - ti.z, ti.limit));
-                ti.writer.WriteScoop(ti.y, ti.tar.nonces, ti.z + ti.src.start - ti.tar.start, ti.scoop3, Math.Min((int)ti.src.nonces - ti.z, ti.limit));
+                ret = ti.writer.WriteScoop(4095 - ti.y, ti.tar.nonces, ti.z + ti.src.start - ti.tar.start, ti.scoop4, Math.Min((int)ti.src.nonces - ti.z, ti.limit));
+                ret = ti.writer.WriteScoop(ti.y, ti.tar.nonces, ti.z + ti.src.start - ti.tar.start, ti.scoop3, Math.Min((int)ti.src.nonces - ti.z, ti.limit));
+                if (!ret)
+                {
+                    lock (mf)
+                    {
+                        stop = stop || !ret;
+                        if (ti.x != 0) autoEvents[1].Set();
+                        return;
+                    }
+                }
             }
-            //Thread.Sleep(2000);
+
             if (ti.x != (ti.end - 1))
                 autoEvents[1].Set();
         }
