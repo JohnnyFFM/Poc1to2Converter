@@ -62,8 +62,6 @@ namespace poc1poc2Conv
             try
             {
                 //assert priviliges
-                _fs = new FileStream(_FileName, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None, 1048576, FileFlagNoBuffering);
-
                 if (!Privileges.HasAdminPrivileges)
                 {
                     DialogResult dialogResult = MessageBox.Show("No elevated file creation possible. File creation will be very slow. Continue?", "Freeze Warning", MessageBoxButtons.YesNo);

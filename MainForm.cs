@@ -582,9 +582,16 @@ namespace poc1poc2Conv
             string[] pfn = temp[temp.GetLength(0) - 1].Split('_');
             plotfile result;
             result.id = Convert.ToUInt64(pfn[0]);
-            result.start = Convert.ToUInt32(pfn[1]);
+            result.start = Convert.ToInt64(pfn[1]);
             result.nonces = Convert.ToInt64(pfn[2]);
-            result.stagger = Convert.ToInt64(pfn[3]);
+            if (pfn.Length == 4)
+            {
+                result.stagger = Convert.ToInt64(pfn[3]);
+            }
+            else
+            {
+                result.stagger = result.nonces;
+            }
             return result;
         }
 
