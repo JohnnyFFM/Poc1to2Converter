@@ -58,6 +58,7 @@ namespace poc1poc2Conv
         private TextBox outputDir;
         private Label outputLabel;
         private CheckBox log;
+        private CheckBox fastmode;
 
 
         /// <summary>
@@ -80,6 +81,7 @@ namespace poc1poc2Conv
             if (sourcedir != "") addDir(sourcedir);
             if (targetdir != "") outputDir.Text = targetdir;
             if (autostart) button4_Click(null,null);
+            if (fast) fastmode.Checked = true;
             //
             // TODO: Add any constructor code after InitializeComponent call
             //
@@ -145,6 +147,7 @@ namespace poc1poc2Conv
             this.folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
             this.statusStrip = new System.Windows.Forms.StatusStrip();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.fastmode = new System.Windows.Forms.CheckBox();
             this.grpConverter.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.memoryLimit)).BeginInit();
             this.grpStatus.SuspendLayout();
@@ -154,6 +157,7 @@ namespace poc1poc2Conv
             // 
             this.grpConverter.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.grpConverter.Controls.Add(this.fastmode);
             this.grpConverter.Controls.Add(this.log);
             this.grpConverter.Controls.Add(this.btnBrowse);
             this.grpConverter.Controls.Add(this.outputDir);
@@ -178,7 +182,7 @@ namespace poc1poc2Conv
             // log
             // 
             this.log.AutoSize = true;
-            this.log.Location = new System.Drawing.Point(553, 26);
+            this.log.Location = new System.Drawing.Point(511, 19);
             this.log.Name = "log";
             this.log.Size = new System.Drawing.Size(91, 17);
             this.log.TabIndex = 24;
@@ -249,7 +253,7 @@ namespace poc1poc2Conv
             // memLimitLabel1
             // 
             this.memLimitLabel1.AutoSize = true;
-            this.memLimitLabel1.Location = new System.Drawing.Point(676, 27);
+            this.memLimitLabel1.Location = new System.Drawing.Point(676, 20);
             this.memLimitLabel1.Name = "memLimitLabel1";
             this.memLimitLabel1.Size = new System.Drawing.Size(68, 13);
             this.memLimitLabel1.TabIndex = 15;
@@ -258,7 +262,7 @@ namespace poc1poc2Conv
             // memLimitLabel2
             // 
             this.memLimitLabel2.AutoSize = true;
-            this.memLimitLabel2.Location = new System.Drawing.Point(817, 27);
+            this.memLimitLabel2.Location = new System.Drawing.Point(817, 20);
             this.memLimitLabel2.Name = "memLimitLabel2";
             this.memLimitLabel2.Size = new System.Drawing.Size(23, 13);
             this.memLimitLabel2.TabIndex = 14;
@@ -271,7 +275,7 @@ namespace poc1poc2Conv
             0,
             0,
             0});
-            this.memoryLimit.Location = new System.Drawing.Point(750, 25);
+            this.memoryLimit.Location = new System.Drawing.Point(750, 18);
             this.memoryLimit.Maximum = new decimal(new int[] {
             4096,
             0,
@@ -481,6 +485,16 @@ namespace poc1poc2Conv
             this.openFileDialog.Filter = "Poc1 Plot files|*_*_*_*.*";
             this.openFileDialog.Multiselect = true;
             // 
+            // fastmode
+            // 
+            this.fastmode.AutoSize = true;
+            this.fastmode.Location = new System.Drawing.Point(511, 43);
+            this.fastmode.Name = "fastmode";
+            this.fastmode.Size = new System.Drawing.Size(227, 17);
+            this.fastmode.TabIndex = 25;
+            this.fastmode.Text = "Fast Disk to Disk mode (EXPERIMENTAL)";
+            this.fastmode.UseVisualStyleBackColor = true;
+            // 
             // MainForm
             // 
             this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
@@ -511,6 +525,7 @@ namespace poc1poc2Conv
         /// </summary>
         public static Boolean logging = false;       //disable direct IO
         public static Boolean ddio = false;       //disable direct IO
+        public static Boolean fast = false;       //fast disk to disk
         private static Boolean autostart = false;  //autostart conversion
         private static string sourcefile = "";  //add plot file via command line
         private static string sourcedir = "";   //add plot files via command line
@@ -548,6 +563,7 @@ namespace poc1poc2Conv
                 }
                 if (args[i] == "-ddio") ddio = true;
                 if (args[i] == "-log") logging = true;
+                if (args[i] == "-fast") fast = true;
                 if (args[i] == "-autostart") autostart = true;
                 if (args[i] == "-mem")
                 {
