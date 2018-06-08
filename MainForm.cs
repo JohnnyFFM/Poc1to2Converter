@@ -713,7 +713,7 @@ namespace poc1poc2Conv
             }
             else
             {
-                if (fastmode)
+                if (fastmode.Checked)
                 {
                     Conversion2(index, filename, nonces);
                 }
@@ -1068,7 +1068,7 @@ namespace poc1poc2Conv
             }
         }
 
-        private void Poc1poc2shuffle(Scoop scoop1, Scoop scoop2, int limit)
+        private static void Poc1poc2shuffle(Scoop scoop1, Scoop scoop2, int limit)
         {
             byte buffer;
             for (int i = 0; i < limit; i++)
@@ -1162,4 +1162,21 @@ namespace poc1poc2Conv
         public long stagger;
     }
 
+    struct TaskInfo
+    {
+        public ScoopReadWriterX reader;
+        public ScoopReadWriterX writer;
+        public int y;
+        public int z;
+        public int x;
+        public int limit;
+        public plotfile src;
+        public plotfile tar;
+        public Scoop scoop1;
+        public Scoop scoop2;
+        public Scoop scoop3;
+        public Scoop scoop4;
+        public bool shuffle;
+        public long end;
+    }
 }
