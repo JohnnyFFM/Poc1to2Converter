@@ -65,6 +65,13 @@ namespace poc1poc2Conv
             //
             InitializeComponent();
 
+            //Fill command line parameter
+            memoryLimit.Value = memlimit;
+            if (startscoop != 0) { btnConversion.Text = "Start Repair"; }
+            if (sourcefile != "") addFile(sourcefile);
+            if (sourcedir != "") addDir(sourcedir);
+            if (targetdir != "") outputDir.Text = targetdir;
+            if (autostart) button4_Click(null,null);
             //
             // TODO: Add any constructor code after InitializeComponent call
             //
@@ -136,7 +143,7 @@ namespace poc1poc2Conv
             // 
             // grpConverter
             // 
-            this.grpConverter.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.grpConverter.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.grpConverter.Controls.Add(this.btnBrowse);
             this.grpConverter.Controls.Add(this.outputDir);
@@ -277,8 +284,8 @@ namespace poc1poc2Conv
             // 
             // plotFileList
             // 
-            this.plotFileList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.plotFileList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.plotFileList.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader2,
@@ -348,7 +355,7 @@ namespace poc1poc2Conv
             // 
             // grpStatus
             // 
-            this.grpStatus.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.grpStatus.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.grpStatus.Controls.Add(this.label1);
             this.grpStatus.Controls.Add(this.textBox2);
@@ -389,8 +396,8 @@ namespace poc1poc2Conv
             // 
             // statusList
             // 
-            this.statusList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.statusList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.statusList.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader10,
@@ -466,7 +473,7 @@ namespace poc1poc2Conv
             this.MaximizeBox = false;
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Johnny\'s POC1->POC2 Plot Converter v.1.8b";
+            this.Text = "Johnny\'s POC1->POC2 Plot Converter v.1.81";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.grpConverter.ResumeLayout(false);
             this.grpConverter.PerformLayout();
@@ -482,9 +489,35 @@ namespace poc1poc2Conv
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
+        public static Boolean ddio = false;       //disable direct IO
+        private static Boolean autostart = false;  //autostart conversion
+        private static string sourcefile = "";  //add plot file via command line
+        private static string sourcedir = "";   //add plot files via command line
+        private static string targetdir = "";   //set output dir via command line
+        private static int memlimit = 4096;     //memory limit
+        private static int startscoop = 0;     //scoop to start at (in case of a unwanted interruption)
+
         [STAThread]
-        static void Main()
+        static void Main(string[] args)
         {
+
+            //parse arguments
+            for (int i = 0; i < args.Length; i++) {
+                if ((args[i] == "-srcfile") && (args[++i]) is string)
+                    sourcefile = (args[i].ToString());
+                if ((args[i] == "-srcdir") && (args[++i]) is string)
+                    sourcedir = (args[i].ToString());
+                if ((args[i] == "-tardir") && (args[++i]) is string)
+                    targetdir = (args[i].ToString());
+                if (args[i] == "-startscoop") int.TryParse(args[++i], out startscoop);
+                if (args[i] == "-ddio") ddio = true;
+                if (args[i] == "-autostart") autostart = true;
+                if (args[i] == "-mem")
+                {
+                    int.TryParse(args[++i], out memlimit);
+                    memlimit = Math.Max(96, Math.Min(4096, memlimit));
+                }
+            }
             Application.Run(new MainForm());
         }
 
@@ -492,7 +525,7 @@ namespace poc1poc2Conv
         private plotfile parsePlotFileName(string name)
         {
             string[] temp = name.Split('\\');
-            string[] pfn = temp[temp.GetLength(0)-1].Split('_');
+            string[] pfn = temp[temp.GetLength(0) - 1].Split('_');
             plotfile result;
             result.id = Convert.ToUInt64(pfn[0]);
             result.start = Convert.ToUInt64(pfn[1]);
@@ -504,19 +537,19 @@ namespace poc1poc2Conv
         private string prettyBytes(long bytes)
         {
             string result;
-            if (bytes < 1024) { result=Math.Round((double)bytes, 1).ToString() + "B"; }
+            if (bytes < 1024) { result = Math.Round((double)bytes, 1).ToString() + "B"; }
             else if (bytes < 1024 * 1024) { result = Math.Round((double)bytes / 1024, 1).ToString() + "kB"; }
             else if (bytes < 1024 * 1024 * 1024) { result = Math.Round((double)bytes / 1024 / 1024, 1).ToString() + "MB"; }
             else if (bytes < 1024L * 1024 * 1024 * 1024) { result = Math.Round((double)bytes / 1024 / 1024 / 1024, 1).ToString() + "GB"; }
-            else { result = Math.Round((double)bytes / 1024 / 1024/1024/1024, 1).ToString() + "TB"; }
+            else { result = Math.Round((double)bytes / 1024 / 1024 / 1024 / 1024, 1).ToString() + "TB"; }
             return result;
         }
 
         private bool isOptimizedPOC1PlotFileName(string filename)
         {
-            Regex rgx = new Regex(@"(.)*\d+(_)\d+(_)\d+(_)\d+$");
+            Regex rgx = new Regex(@"(.)*(\\)+\d+(_)\d+(_)\d+(_)\d+$");
 
-            if (rgx.IsMatch(filename)){
+            if (rgx.IsMatch(filename)) {
                 plotfile temp = parsePlotFileName(filename);
                 return temp.stagger == temp.nonces ? true : false;
             }
@@ -577,16 +610,16 @@ namespace poc1poc2Conv
                     return;
                 }
             }
-            
+
             btnConversion.Enabled = false;
             outputDir.Enabled = false;
             btnBrowse.Enabled = false;
             memoryLimit.Enabled = false;
-            
+
             //create status tasks
             statusList.Items.Clear();
             foreach (ListViewItem x in plotFileList.Items) {
-                if (x.SubItems[7].Text.Equals("Ok.")){ 
+                if (x.SubItems[7].Text.Equals("Ok.")) {
                     ListViewItem item = new ListViewItem(x.Name);
                     item.Text = x.Name;
                     item.Name = x.Name;
@@ -615,22 +648,22 @@ namespace poc1poc2Conv
                 count++;
             }
 
-                //start Conversion as Thread to keep UI responsive                
-                new Thread(() =>
-            {
-                Thread.CurrentThread.IsBackground = true;
-                Conversion(index, filename, nonces);
-                enableControl(btnConversion);
-                enableControl(outputDir);
-                enableControl(btnBrowse);
-                enableControl(memoryLimit);
-            }).Start();
+            //start Conversion as Thread to keep UI responsive                
+            new Thread(() =>
+        {
+            Thread.CurrentThread.IsBackground = true;
+            Conversion(index, filename, nonces);
+            enableControl(btnConversion);
+            enableControl(outputDir);
+            enableControl(btnBrowse);
+            enableControl(memoryLimit);
+        }).Start();
         }
 
         private void Conversion(int[] index, string[] filename, int[] nonces)
         {
             // calc maximum nonces to read (limit)
-            int limit = Convert.ToInt32(memoryLimit.Value-1) * 8192;
+            int limit = Convert.ToInt32(memoryLimit.Value - 1) * 8192;
             //loop all tasks
             for (int i = 0; i < index.Length; i++)
             {
@@ -651,7 +684,7 @@ namespace poc1poc2Conv
                     scoopReadWriter = new ScoopReadWriter(filename[i], outputDir.Text + "\\" + Path.GetFileName(filename[i]).Replace(nonces[i].ToString() + "_" + nonces[i].ToString(), nonces[i].ToString()));
                 }
                 scoopReadWriter.Open();
-                
+
                 //prealloc disk space
                 if (outputDir.Text != "")
                 {
@@ -659,7 +692,7 @@ namespace poc1poc2Conv
                 }
 
                 //loop scoop pairs
-                for (int y = 0; y < 2048; y++)
+                for (int y = startscoop; y < 2048; y++)
                 {
                     setStatus(index[i], 2, "Processing Scoop Pairs " + (y + 1).ToString() + "/2048");
                     Application.DoEvents();
@@ -712,7 +745,7 @@ namespace poc1poc2Conv
         {
             if (statusList.InvokeRequired)
             {
-                statusList.Invoke(new MethodInvoker(() => { setStatus(ix1,ix2,value); }));
+                statusList.Invoke(new MethodInvoker(() => { setStatus(ix1, ix2, value); }));
             }
             else
             {
@@ -739,7 +772,7 @@ namespace poc1poc2Conv
             {
                 for (int j = 32; j < 64; j++)
                 {
-                    buffer = scoop1.byteArrayField[64*i+j];
+                    buffer = scoop1.byteArrayField[64 * i + j];
                     scoop1.byteArrayField[64 * i + j] = scoop2.byteArrayField[64 * i + j];
                     scoop2.byteArrayField[64 * i + j] = buffer;
                 }
@@ -752,23 +785,45 @@ namespace poc1poc2Conv
             {
                 foreach (string file in openFileDialog.FileNames)
                 {
-                    if (isOptimizedPOC1PlotFileName(file) && !plotFileList.Items.ContainsKey(file))
-                    {
-                        plotfile temp = parsePlotFileName(file);
-                        long length = new System.IO.FileInfo(file).Length;
-                        ListViewItem item = new ListViewItem(file);
-                        item.Text = file;
-                        item.Name = file;
-                        item.SubItems.Add(temp.id.ToString());
-                        item.SubItems.Add(temp.start.ToString());
-                        item.SubItems.Add((temp.start + Convert.ToUInt64(temp.nonces) - 1).ToString());
-                        item.SubItems.Add(temp.nonces.ToString());
-                        item.SubItems.Add(temp.stagger.ToString());
-                        item.SubItems.Add(prettyBytes(length));
-                        item.SubItems.Add(length == temp.nonces * 4096 * 32 * 2 ? "Ok." : "Error: Actual file size not matching implied file size!");
-                        plotFileList.Items.Add(item);
-                    }
+                    addFile(file);
                 }
+            }
+        }
+
+        private void addDir(string dir)
+        {
+            foreach (string file in System.IO.Directory.GetFiles(dir, "*"))
+            {
+                addFile(file);
+            }
+        }
+
+        private void addFile(string file)
+        {
+        if (isOptimizedPOC1PlotFileName(file) && !plotFileList.Items.ContainsKey(file))
+        {
+            plotfile temp = parsePlotFileName(file);
+                long length;
+                try
+                {
+                    length = new System.IO.FileInfo(file).Length;
+                }
+                catch (Exception e)
+                {
+                    MessageBox.Show(e.Message,"Error Opening File", MessageBoxButtons.OK);
+                    return;
+                }
+            ListViewItem item = new ListViewItem(file);
+            item.Text = file;
+            item.Name = file;
+            item.SubItems.Add(temp.id.ToString());
+            item.SubItems.Add(temp.start.ToString());
+            item.SubItems.Add((temp.start + Convert.ToUInt64(temp.nonces) - 1).ToString());
+            item.SubItems.Add(temp.nonces.ToString());
+            item.SubItems.Add(temp.stagger.ToString());
+            item.SubItems.Add(prettyBytes(length));
+            item.SubItems.Add(length == temp.nonces * 4096 * 32 * 2 ? "Ok." : "Error: Actual file size not matching implied file size!");
+            plotFileList.Items.Add(item);
             }
         }
 
