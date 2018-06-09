@@ -60,6 +60,7 @@ namespace poc1poc2Conv
         private CheckBox log;
         private CheckBox fastmode;
         static AutoResetEvent[] autoEvents;
+        private ToolStripStatusLabel lbl_status;
 
         /// <summary>
         /// Required designer variable.
@@ -111,6 +112,7 @@ namespace poc1poc2Conv
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.grpConverter = new System.Windows.Forms.GroupBox();
+            this.fastmode = new System.Windows.Forms.CheckBox();
             this.log = new System.Windows.Forms.CheckBox();
             this.btnBrowse = new System.Windows.Forms.Button();
             this.outputDir = new System.Windows.Forms.TextBox();
@@ -146,11 +148,12 @@ namespace poc1poc2Conv
             this.columnHeader15 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
             this.statusStrip = new System.Windows.Forms.StatusStrip();
+            this.lbl_status = new System.Windows.Forms.ToolStripStatusLabel();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
-            this.fastmode = new System.Windows.Forms.CheckBox();
             this.grpConverter.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.memoryLimit)).BeginInit();
             this.grpStatus.SuspendLayout();
+            this.statusStrip.SuspendLayout();
             this.SuspendLayout();
             // 
             // grpConverter
@@ -179,6 +182,17 @@ namespace poc1poc2Conv
             this.grpConverter.TabStop = false;
             this.grpConverter.Text = "Sequential Plot File Conversion (POC1 --> POC2)";
             // 
+            // fastmode
+            // 
+            this.fastmode.AutoSize = true;
+            this.fastmode.Location = new System.Drawing.Point(511, 43);
+            this.fastmode.Name = "fastmode";
+            this.fastmode.Size = new System.Drawing.Size(227, 17);
+            this.fastmode.TabIndex = 25;
+            this.fastmode.Text = "Fast Disk to Disk mode (EXPERIMENTAL)";
+            this.fastmode.UseVisualStyleBackColor = true;
+            this.fastmode.CheckedChanged += new System.EventHandler(this.fastmode_CheckedChanged);
+            // 
             // log
             // 
             this.log.AutoSize = true;
@@ -204,6 +218,7 @@ namespace poc1poc2Conv
             this.outputDir.Name = "outputDir";
             this.outputDir.Size = new System.Drawing.Size(262, 20);
             this.outputDir.TabIndex = 22;
+            this.outputDir.TextChanged += new System.EventHandler(this.outputDir_TextChanged);
             // 
             // outputLabel
             // 
@@ -296,6 +311,7 @@ namespace poc1poc2Conv
             0,
             0,
             0});
+            this.memoryLimit.ValueChanged += new System.EventHandler(this.memoryLimit_ValueChanged);
             // 
             // btnAddFolder
             // 
@@ -474,26 +490,23 @@ namespace poc1poc2Conv
             // 
             // statusStrip
             // 
+            this.statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.lbl_status});
             this.statusStrip.Location = new System.Drawing.Point(0, 489);
             this.statusStrip.Name = "statusStrip";
             this.statusStrip.Size = new System.Drawing.Size(870, 22);
             this.statusStrip.TabIndex = 13;
             this.statusStrip.Text = "statusStrip1";
             // 
+            // lbl_status
+            // 
+            this.lbl_status.Name = "lbl_status";
+            this.lbl_status.Size = new System.Drawing.Size(0, 17);
+            // 
             // openFileDialog
             // 
             this.openFileDialog.Filter = "Poc1 Plot files|*_*_*_*.*";
             this.openFileDialog.Multiselect = true;
-            // 
-            // fastmode
-            // 
-            this.fastmode.AutoSize = true;
-            this.fastmode.Location = new System.Drawing.Point(511, 43);
-            this.fastmode.Name = "fastmode";
-            this.fastmode.Size = new System.Drawing.Size(227, 17);
-            this.fastmode.TabIndex = 25;
-            this.fastmode.Text = "Fast Disk to Disk mode (EXPERIMENTAL)";
-            this.fastmode.UseVisualStyleBackColor = true;
             // 
             // MainForm
             // 
@@ -514,6 +527,8 @@ namespace poc1poc2Conv
             ((System.ComponentModel.ISupportInitialize)(this.memoryLimit)).EndInit();
             this.grpStatus.ResumeLayout(false);
             this.grpStatus.PerformLayout();
+            this.statusStrip.ResumeLayout(false);
+            this.statusStrip.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -595,6 +610,36 @@ namespace poc1poc2Conv
             return result;
         }
 
+        private string memNeeded()
+        {
+            if (plotFileList.Items.Count == 0){
+                return "";
+            }
+            decimal mem = 0;
+            int maxnonces = 0;
+            //check all file sizes and calc mem
+            foreach (ListViewItem x in plotFileList.Items)
+            {
+                if (x.SubItems[7].Text.Equals("Ok."))
+                {
+                    maxnonces = Math.Max(Convert.ToInt32(x.SubItems[4].Text), maxnonces);
+                }
+            }
+            if (fastmode.Checked && outputDir.Text != "")
+            {
+                mem = Math.Ceiling(Math.Min(memoryLimit.Value, maxnonces / (2 << 11)));
+            }
+            else
+            {
+                mem = Math.Ceiling(Math.Min(memoryLimit.Value, maxnonces / (2 << 12)));
+            }
+        
+
+            return "Memory needed: "+ mem.ToString() +" MB";
+
+
+        }
+
         private string prettyBytes(long bytes)
         {
             string result;
@@ -641,6 +686,7 @@ namespace poc1poc2Conv
                         item.SubItems.Add(prettyBytes(length));
                         item.SubItems.Add(length == temp.nonces * 4096 * 32 * 2 ? "Ok." : "Error: Actual file size not matching implied file size!");
                         plotFileList.Items.Add(item);
+                        lbl_status.Text = memNeeded();
                     }
 
                 }
@@ -653,12 +699,14 @@ namespace poc1poc2Conv
             while (plotFileList.SelectedItems.Count > 0)
             {
                 plotFileList.Items.Remove(plotFileList.SelectedItems[0]);
+                lbl_status.Text = memNeeded();
             }
         }
 
         private void button5_Click(object sender, EventArgs e)
         {
             plotFileList.Items.Clear();
+            lbl_status.Text = "";
         }
 
         private void button4_Click(object sender, EventArgs e)
@@ -1018,7 +1066,7 @@ namespace poc1poc2Conv
                 for (long x = 1; x < masterplan.LongLength; x++)
                 {
                     setStatus(index[i], 2, "Processing Scoop Pairs " + (masterplan[x].y + 1).ToString() + "/2048");
-                    if (log.Checked) logIT("Processing Scoop Pair: " + (masterplan[x].y + 1).ToString());
+                    if (log.Checked) logIT("Processing Scoop Pair: " + (masterplan[x].y).ToString());
                     Application.DoEvents();
 
                     ThreadPool.QueueUserWorkItem(new WaitCallback(Th_write), masterplan[x - 1]);
@@ -1250,6 +1298,7 @@ namespace poc1poc2Conv
             item.SubItems.Add(prettyBytes(length));
             item.SubItems.Add(length == temp.nonces * 4096 * 32 * 2 ? "Ok." : "Error: Actual file size not matching implied file size!");
             plotFileList.Items.Add(item);
+            lbl_status.Text = memNeeded();
             }
         }
 
@@ -1274,6 +1323,21 @@ namespace poc1poc2Conv
                     e.Cancel = (window != DialogResult.Yes);
                 }
             }
+        }
+
+        private void fastmode_CheckedChanged(object sender, EventArgs e)
+        {
+            lbl_status.Text = memNeeded();
+        }
+
+        private void memoryLimit_ValueChanged(object sender, EventArgs e)
+        {
+            lbl_status.Text = memNeeded();
+        }
+
+        private void outputDir_TextChanged(object sender, EventArgs e)
+        {
+            lbl_status.Text = memNeeded();
         }
     }
 
