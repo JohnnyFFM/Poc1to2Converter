@@ -1336,32 +1336,26 @@ namespace poc1poc2Conv
 
         private static void Poc1poc2shuffle(Scoop scoop1, Scoop scoop2, int limit)
         {
-            byte buffer;
+            byte[] buffer = new byte[32];
             for (int i = 0; i < limit; i++)
             {
-                for (int j = 32; j < 64; j++)
-                {
-                    buffer = scoop1.byteArrayField[64 * i + j];
-                    scoop1.byteArrayField[64 * i + j] = scoop2.byteArrayField[64 * i + j];
-                    scoop2.byteArrayField[64 * i + j] = buffer;
-                }
+                    Buffer.BlockCopy(scoop1.byteArrayField, 64*i+32, buffer, 0, 32);
+                    Buffer.BlockCopy(scoop2.byteArrayField, 64*i+32, scoop1.byteArrayField, 64 * i + 32, 32);
+                    Buffer.BlockCopy(buffer, 0, scoop2.byteArrayField, 64 * i + 32, 32);
             }
         }
 
         private static void Poc1poc2shuffleBoost(Scoop scoop1, Scoop scoop2, int nonces, int limit)
         {
-            byte buffer;
+            byte[] buffer = new byte[32];
             int partition = limit / nonces;
             for (int p = 0; p < partition; p++)
             {
                 for (int i = 0; i < nonces; i++)
                 {
-                    for (int j = 32; j < 64; j++)
-                    {
-                        buffer = scoop1.byteArrayField[p*nonces*64+64 * i + j];
-                        scoop1.byteArrayField[p*nonces*64 + 64 * i + j] = scoop2.byteArrayField[(partition-p-1)*nonces*64 + 64 * i + j];
-                        scoop2.byteArrayField[(partition - p-1) * nonces*64 + 64 * i + j] = buffer;
-                    }
+                        Buffer.BlockCopy(scoop1.byteArrayField, p * nonces * 64 + 64 * i + 32, buffer, 0, 32);
+                        Buffer.BlockCopy(scoop2.byteArrayField, (partition - p - 1) * nonces * 64 + 64 * i + 32, scoop1.byteArrayField, p * nonces * 64 + 64 * i + 32, 32);
+                        Buffer.BlockCopy(buffer, 0, scoop2.byteArrayField, (partition - p - 1) * nonces * 64 + 64 * i + 32, 32);
                 }
             }
         }
