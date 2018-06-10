@@ -61,6 +61,7 @@ namespace poc1poc2Conv
         private CheckBox fastmode;
         static AutoResetEvent[] autoEvents;
         private ToolStripStatusLabel lbl_status;
+        private CheckBox boost;
 
         /// <summary>
         /// Required designer variable.
@@ -78,11 +79,12 @@ namespace poc1poc2Conv
             memoryLimit.Value = memlimit;
             if (startscoop != 0) { btnConversion.Text = "Start Repair"; }
             if (logging) log.Checked = true;
+            if (targetdir != "") outputDir.Text = targetdir;
+            if (fast) fastmode.Checked = true;
+            if (useboost) boost.Checked = true;
             if (sourcefile != "") addFile(sourcefile);
             if (sourcedir != "") addDir(sourcedir);
-            if (targetdir != "") outputDir.Text = targetdir;
-            if (autostart) button4_Click(null,null);
-            if (fast) fastmode.Checked = true;
+            if (autostart) button4_Click(null, null);
             //
             // TODO: Add any constructor code after InitializeComponent call
             //
@@ -112,6 +114,7 @@ namespace poc1poc2Conv
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.grpConverter = new System.Windows.Forms.GroupBox();
+            this.boost = new System.Windows.Forms.CheckBox();
             this.fastmode = new System.Windows.Forms.CheckBox();
             this.log = new System.Windows.Forms.CheckBox();
             this.btnBrowse = new System.Windows.Forms.Button();
@@ -160,6 +163,7 @@ namespace poc1poc2Conv
             // 
             this.grpConverter.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.grpConverter.Controls.Add(this.boost);
             this.grpConverter.Controls.Add(this.fastmode);
             this.grpConverter.Controls.Add(this.log);
             this.grpConverter.Controls.Add(this.btnBrowse);
@@ -182,21 +186,32 @@ namespace poc1poc2Conv
             this.grpConverter.TabStop = false;
             this.grpConverter.Text = "Sequential Plot File Conversion (POC1 --> POC2)";
             // 
+            // boost
+            // 
+            this.boost.AutoSize = true;
+            this.boost.Location = new System.Drawing.Point(511, 62);
+            this.boost.Name = "boost";
+            this.boost.Size = new System.Drawing.Size(156, 17);
+            this.boost.TabIndex = 26;
+            this.boost.Text = "Speed Boost (Experimental)";
+            this.boost.UseVisualStyleBackColor = true;
+            this.boost.CheckedChanged += new System.EventHandler(this.boost_CheckedChanged);
+            // 
             // fastmode
             // 
             this.fastmode.AutoSize = true;
-            this.fastmode.Location = new System.Drawing.Point(511, 43);
+            this.fastmode.Location = new System.Drawing.Point(511, 39);
             this.fastmode.Name = "fastmode";
-            this.fastmode.Size = new System.Drawing.Size(227, 17);
+            this.fastmode.Size = new System.Drawing.Size(204, 17);
             this.fastmode.TabIndex = 25;
-            this.fastmode.Text = "Fast Disk to Disk mode (EXPERIMENTAL)";
+            this.fastmode.Text = "Fast Disk to Disk mode (Experimental)";
             this.fastmode.UseVisualStyleBackColor = true;
             this.fastmode.CheckedChanged += new System.EventHandler(this.fastmode_CheckedChanged);
             // 
             // log
             // 
             this.log.AutoSize = true;
-            this.log.Location = new System.Drawing.Point(511, 19);
+            this.log.Location = new System.Drawing.Point(511, 16);
             this.log.Name = "log";
             this.log.Size = new System.Drawing.Size(91, 17);
             this.log.TabIndex = 24;
@@ -250,7 +265,7 @@ namespace poc1poc2Conv
             // plotFileListLabel
             // 
             this.plotFileListLabel.AutoSize = true;
-            this.plotFileListLabel.Location = new System.Drawing.Point(12, 55);
+            this.plotFileListLabel.Location = new System.Drawing.Point(12, 68);
             this.plotFileListLabel.Name = "plotFileListLabel";
             this.plotFileListLabel.Size = new System.Drawing.Size(77, 13);
             this.plotFileListLabel.TabIndex = 16;
@@ -268,7 +283,7 @@ namespace poc1poc2Conv
             // memLimitLabel1
             // 
             this.memLimitLabel1.AutoSize = true;
-            this.memLimitLabel1.Location = new System.Drawing.Point(676, 20);
+            this.memLimitLabel1.Location = new System.Drawing.Point(676, 16);
             this.memLimitLabel1.Name = "memLimitLabel1";
             this.memLimitLabel1.Size = new System.Drawing.Size(68, 13);
             this.memLimitLabel1.TabIndex = 15;
@@ -277,7 +292,7 @@ namespace poc1poc2Conv
             // memLimitLabel2
             // 
             this.memLimitLabel2.AutoSize = true;
-            this.memLimitLabel2.Location = new System.Drawing.Point(817, 20);
+            this.memLimitLabel2.Location = new System.Drawing.Point(817, 16);
             this.memLimitLabel2.Name = "memLimitLabel2";
             this.memLimitLabel2.Size = new System.Drawing.Size(23, 13);
             this.memLimitLabel2.TabIndex = 14;
@@ -290,14 +305,14 @@ namespace poc1poc2Conv
             0,
             0,
             0});
-            this.memoryLimit.Location = new System.Drawing.Point(750, 18);
+            this.memoryLimit.Location = new System.Drawing.Point(750, 14);
             this.memoryLimit.Maximum = new decimal(new int[] {
             4096,
             0,
             0,
             0});
             this.memoryLimit.Minimum = new decimal(new int[] {
-            96,
+            1,
             0,
             0,
             0});
@@ -338,9 +353,9 @@ namespace poc1poc2Conv
             this.columnHeader9});
             this.plotFileList.FullRowSelect = true;
             this.plotFileList.HideSelection = false;
-            this.plotFileList.Location = new System.Drawing.Point(10, 75);
+            this.plotFileList.Location = new System.Drawing.Point(10, 85);
             this.plotFileList.Name = "plotFileList";
-            this.plotFileList.Size = new System.Drawing.Size(824, 168);
+            this.plotFileList.Size = new System.Drawing.Size(824, 158);
             this.plotFileList.TabIndex = 10;
             this.plotFileList.UseCompatibleStateImageBehavior = false;
             this.plotFileList.View = System.Windows.Forms.View.Details;
@@ -520,7 +535,7 @@ namespace poc1poc2Conv
             this.MaximizeBox = false;
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Johnny\'s POC1->POC2 Plot Converter v.2.0";
+            this.Text = "Johnny\'s POC1->POC2 Plot Converter v.2.1";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.grpConverter.ResumeLayout(false);
             this.grpConverter.PerformLayout();
@@ -550,7 +565,8 @@ namespace poc1poc2Conv
         private static string logfile = "";   //logfile
         private static Boolean halt;         //halt conversion after current file
         private static Boolean stop;         //stop conversion after error
-      
+        private static Boolean useboost = false;         //stop conversion after error
+
 
         static void logIT(string e)
         {
@@ -578,6 +594,7 @@ namespace poc1poc2Conv
                 }
                 if (args[i] == "-ddio") ddio = true;
                 if (args[i] == "-log") logging = true;
+                if (args[i] == "-boost") useboost = true;
                 if (args[i] == "-fast") fast = true;
                 if (args[i] == "-autostart") autostart = true;
                 if (args[i] == "-mem")
@@ -615,29 +632,37 @@ namespace poc1poc2Conv
             if (plotFileList.Items.Count == 0){
                 return "";
             }
-            decimal mem = 0;
-            int maxnonces = 0;
+            int boostmulti = 1;
+            decimal localmem = 0;
+            decimal maxmem = 0;
+            int nonces = 0;
             //check all file sizes and calc mem
             foreach (ListViewItem x in plotFileList.Items)
             {
                 if (x.SubItems[7].Text.Equals("Ok."))
                 {
-                    maxnonces = Math.Max(Convert.ToInt32(x.SubItems[4].Text), maxnonces);
+                    nonces = Convert.ToInt32(x.SubItems[4].Text);
+                    if (fastmode.Checked && outputDir.Text != "")
+                    {
+                       localmem = Math.Min((memoryLimit.Value-1), Math.Ceiling((decimal)nonces / (2 << 11)));
+                    }
+                    else
+                    {
+                       localmem = Math.Min((memoryLimit.Value - 1), Math.Ceiling((decimal)nonces / (2 << 12)));
+                    }
+                    if (boost.Checked)
+                    {
+                        for(int i=0; localmem*(2<<i) < (memoryLimit.Value - 1); i++)
+                        {
+                            boostmulti = (2 << i);
+                        }
+
+                    }
+                    maxmem = Math.Max(maxmem, localmem*boostmulti);
+
                 }
             }
-            if (fastmode.Checked && outputDir.Text != "")
-            {
-                mem = Math.Ceiling(Math.Min(memoryLimit.Value, maxnonces / (2 << 11)));
-            }
-            else
-            {
-                mem = Math.Ceiling(Math.Min(memoryLimit.Value, maxnonces / (2 << 12)));
-            }
-        
-
-            return "Memory needed: "+ mem.ToString() +" MB";
-
-
+            return "Memory needed: " + maxmem.ToString() + " MB";
         }
 
         private string prettyBytes(long bytes)
@@ -787,6 +812,7 @@ namespace poc1poc2Conv
 
         private void Conversion(int[] index, string[] filename, int[] nonces)
         {
+
             // calc maximum nonces to read (limit)
             int limit = Convert.ToInt32(memoryLimit.Value - 1) * 8192;
             //loop all tasks
@@ -802,14 +828,29 @@ namespace poc1poc2Conv
                     setStatus(index[i], 2, "Skipped file!");
                     continue;
                 }
-                if (log.Checked) logIT("Processing file: "+filename[i]);
+
+                //calc boost
+                decimal localmem;
+                int boostmulti = 1;
+                localmem = Math.Min(memoryLimit.Value, Math.Ceiling((decimal)nonces[i] / (2 << 12)));
+                if (boost.Checked)
+                {
+                    for (int x = 0; localmem * (2 << x) < (memoryLimit.Value-1); x++)
+                    {
+                        {
+                            boostmulti = (2 << x);
+                        }
+                    }
+                }
+
+            if (log.Checked) logIT("Processing file: "+filename[i]);
                 DateTime start = DateTime.Now;
                 TimeSpan elapsed;
                 TimeSpan togo;
                 //allocate memory
                 if (log.Checked) logIT("Allocating Memory...");
-                Scoop scoop1 = new Scoop(Math.Min(nonces[i], limit));  //space needed for one partial scoop
-                Scoop scoop2 = new Scoop(Math.Min(nonces[i], limit));  //space needed for one partial scoop
+                Scoop scoop1 = new Scoop(Math.Min(nonces[i] * boostmulti, limit));  //space needed for one partial scoop
+                Scoop scoop2 = new Scoop(Math.Min(nonces[i] * boostmulti, limit));  //space needed for one partial scoop
                 //Create and open Reader/Writer
                 if (log.Checked) logIT("Opening File(s)...");
                 ScoopReadWriter scoopReadWriter;
@@ -867,38 +908,45 @@ namespace poc1poc2Conv
                 }
 
                 //loop scoop pairs
-                for (int y = startscoop; y < 2048; y++)
+                for (int y = startscoop; y < 2048; y=y+boostmulti)
                 {
                     if (stop) break;
                     setStatus(index[i], 2, "Processing Scoop Pairs " + (y + 1).ToString() + "/2048");
                     Application.DoEvents();
                     //loop partial scoop
-                    for (int z = 0; z < nonces[i]; z += limit)
+                    for (int z = 0; z < nonces[i] * boostmulti; z += limit)
                     {
                         if (log.Checked) logIT("Processing Scoop Pair: "+y.ToString());
-                        stop = stop || !scoopReadWriter.ReadScoop(y, nonces[i], z, scoop1, Math.Min(nonces[i] - z, limit));
+                        stop = stop || !scoopReadWriter.ReadScoop(y, nonces[i], z, scoop1, Math.Min(nonces[i] * boostmulti - z, limit));
                         if (stop)
                         {
                             if (log.Checked) logIT("ERROR! Error reading front scoop : " + y.ToString());
                             setStatus(index[i], 2, "ERROR! Error reading front scoop : "+y.ToString());
                             break;
                         }
-                        stop = stop || !scoopReadWriter.ReadScoop(4095 - y, nonces[i], z, scoop2, Math.Min(nonces[i] - z, limit));
+                        stop = stop || !scoopReadWriter.ReadScoop(4095 - y - (boostmulti-1), nonces[i], z, scoop2, Math.Min(nonces[i] * boostmulti - z, limit));
                         if (stop)
                         {
                             if (log.Checked) logIT("ERROR! Error reading back scoop : " + y.ToString());
                             setStatus(index[i], 2, "ERROR! Error reading back scoop : " + y.ToString());
                             break;
                         }
-                        Poc1poc2shuffle(scoop1, scoop2, Math.Min(nonces[i] - z, limit));
-                        stop = stop || !scoopReadWriter.WriteScoop(4095 - y, nonces[i], z, scoop2, Math.Min(nonces[i] - z, limit));
+                        if (boost.Checked)
+                        {
+                            Poc1poc2shuffleBoost(scoop1, scoop2, nonces[i], Math.Min(nonces[i] * boostmulti - z, limit));
+                        }
+                        else
+                        {
+                            Poc1poc2shuffle(scoop1, scoop2, Math.Min(nonces[i] * boostmulti - z, limit));
+                        }
+                        stop = stop || !scoopReadWriter.WriteScoop(4095 - y - (boostmulti - 1), nonces[i], z, scoop2, Math.Min(nonces[i] * boostmulti - z, limit));
                         if (stop)
                         {
                             if (log.Checked) logIT("ERROR! Error writing back scoop : " + y.ToString());
                             setStatus(index[i], 2, "ERROR! Error writing back scoop : " + y.ToString());
                             break;
                         }
-                        stop = stop || !scoopReadWriter.WriteScoop(y, nonces[i], z, scoop1, Math.Min(nonces[i] - z, limit));
+                        stop = stop || !scoopReadWriter.WriteScoop(y, nonces[i], z, scoop1, Math.Min(nonces[i] * boostmulti - z, limit));
                         if (stop)
                         {
                             if (log.Checked) logIT("ERROR! Error writing front scoop : " + y.ToString());
@@ -910,8 +958,8 @@ namespace poc1poc2Conv
                     if (!stop)
                     {
                         elapsed = DateTime.Now.Subtract(start);
-                        togo = TimeSpan.FromTicks(elapsed.Ticks / (y - startscoop + 1) * (2048 - y - 1));
-                        setStatus(index[i], 3, Math.Round((double)(y + 1) / 2048 * 100).ToString() + "%");
+                        togo = TimeSpan.FromTicks(elapsed.Ticks / (y +(boostmulti-1)- startscoop + 1) * (2048 - y - (boostmulti - 1) - 1));
+                        setStatus(index[i], 3, Math.Round((double)(y + (boostmulti - 1) + 1) / 2048 * 100).ToString() + "%");
                         setStatus(index[i], 4, timeSpanToString(elapsed));
                         setStatus(index[i], 5, timeSpanToString(togo));
                     }
@@ -921,12 +969,22 @@ namespace poc1poc2Conv
                 if (!stop)
                 {
                     if (log.Checked) logIT("Renaming File...");
-                    // rename file
-                    if (outputDir.Text == "")
-                        System.IO.File.Move(filename[i], filename[i].Replace(nonces[i].ToString() + "_" + nonces[i].ToString(), nonces[i].ToString()));
+
                     // update status
                     if (log.Checked) logIT("Plot successfully converted.");
                     setStatus(index[i], 2, "Plot successfully converted.");
+
+                    // rename file
+                    if (outputDir.Text == "")
+                        try
+                        {
+                            System.IO.File.Move(filename[i], filename[i].Replace(nonces[i].ToString() + "_" + nonces[i].ToString(), nonces[i].ToString()));
+                        }catch(Exception e)
+                        {
+                            if (log.Checked) logIT("ERROR! File rename failed.");
+                            setStatus(index[i], 2, "ERROR! File rename failed.");
+                        }
+
                 }
                 //free memory
                 if (log.Checked) logIT("Releasing Memory.");
@@ -954,16 +1012,31 @@ namespace poc1poc2Conv
                     setStatus(index[i], 2, "Skipped file!");
                     continue;
                 }
+
+                //calc boost
+                decimal localmem;
+                int boostmulti = 1;
+                localmem = Math.Min(memoryLimit.Value, Math.Ceiling((decimal)nonces[i] / (2 << 11)));
+                if (boost.Checked)
+                {
+                    for (int x = 0; localmem * (2 << x) < (memoryLimit.Value - 1); x++)
+                    {
+                        {
+                            boostmulti = (2 << x);
+                        }
+                    }
+                }
+
                 if (log.Checked) logIT("Processing file: " + filename[i]);
                 DateTime start = DateTime.Now;
                 TimeSpan elapsed;
                 TimeSpan togo;
                 //allocate memory
                 if (log.Checked) logIT("Allocating Memory...");
-                Scoop scoop1 = new Scoop(Math.Min(nonces[i], limit));  //space needed for one partial scoop
-                Scoop scoop2 = new Scoop(Math.Min(nonces[i], limit));  //space needed for one partial scoop
-                Scoop scoop3 = new Scoop(Math.Min(nonces[i], limit));  //space needed for one partial scoop
-                Scoop scoop4 = new Scoop(Math.Min(nonces[i], limit));  //space needed for one partial scoop     
+                Scoop scoop1 = new Scoop(Math.Min(nonces[i] * boostmulti, limit));  //space needed for one partial scoop
+                Scoop scoop2 = new Scoop(Math.Min(nonces[i] * boostmulti, limit));  //space needed for one partial scoop
+                Scoop scoop3 = new Scoop(Math.Min(nonces[i] * boostmulti, limit));  //space needed for one partial scoop
+                Scoop scoop4 = new Scoop(Math.Min(nonces[i] * boostmulti, limit));  //space needed for one partial scoop     
 
                 plotfile src = parsePlotFileName(filename[i]);
                 plotfile tar = parsePlotFileName(outputDir.Text + "\\" + Path.GetFileName(filename[i]).Replace(nonces[i].ToString() + "_" + nonces[i].ToString(), nonces[i].ToString()));
@@ -1024,30 +1097,31 @@ namespace poc1poc2Conv
 
                 //create taskplan
                 int loops = (int)Math.Ceiling((double)(nonces[i]) / limit);
-                TaskInfo[] masterplan = new TaskInfo[2048 * loops];
+                TaskInfo[] masterplan = new TaskInfo[2048/boostmulti * loops];
 
                 //create masterplan
-                for (int y = 0; y < 2048; y++)
+                for (int y = 0; y < 2048; y=y+boostmulti)
                 {
                     //loop partial scoop
                     int zz = 0;
                     for (int z = 0; z < nonces[i]; z += limit)
                     {
-                        masterplan[y * loops + zz] = new TaskInfo();
-                        masterplan[y * loops + zz].reader = scoopReadWriter1;
-                        masterplan[y * loops + zz].writer = scoopReadWriter2;
-                        masterplan[y * loops + zz].y = y;
-                        masterplan[y * loops + zz].z = z;
-                        masterplan[y * loops + zz].x = y * loops + zz;
-                        masterplan[y * loops + zz].limit = limit;
-                        masterplan[y * loops + zz].src = src;
-                        masterplan[y * loops + zz].tar = tar;
-                        masterplan[y * loops + zz].scoop1 = scoop1;
-                        masterplan[y * loops + zz].scoop2 = scoop2;
-                        masterplan[y * loops + zz].scoop3 = scoop3;
-                        masterplan[y * loops + zz].scoop4 = scoop4;
-                        masterplan[y * loops + zz].shuffle = true;
-                        masterplan[y * loops + zz].end = masterplan.LongLength;
+                        masterplan[y / boostmulti * loops + zz] = new TaskInfo();
+                        masterplan[y / boostmulti * loops + zz].reader = scoopReadWriter1;
+                        masterplan[y / boostmulti * loops + zz].writer = scoopReadWriter2;
+                        masterplan[y / boostmulti * loops + zz].y = y;
+                        masterplan[y / boostmulti * loops + zz].z = z;
+                        masterplan[y / boostmulti * loops + zz].x = y / boostmulti * loops + zz;
+                        masterplan[y / boostmulti * loops + zz].limit = limit;
+                        masterplan[y / boostmulti * loops + zz].src = src;
+                        masterplan[y / boostmulti * loops + zz].tar = tar;
+                        masterplan[y / boostmulti * loops + zz].scoop1 = scoop1;
+                        masterplan[y / boostmulti * loops + zz].scoop2 = scoop2;
+                        masterplan[y / boostmulti * loops + zz].scoop3 = scoop3;
+                        masterplan[y / boostmulti * loops + zz].scoop4 = scoop4;
+                        masterplan[y / boostmulti * loops + zz].shuffle = true;
+                        masterplan[y / boostmulti * loops + zz].boostmulti = boostmulti;
+                        masterplan[y / boostmulti * loops + zz].end = masterplan.LongLength;
                         zz += 1;
                     }
                 }
@@ -1080,8 +1154,8 @@ namespace poc1poc2Conv
                     }
                     //update status
                     elapsed = DateTime.Now.Subtract(start);
-                    togo = TimeSpan.FromTicks(elapsed.Ticks / (masterplan[x].y + 1) * (2048 - masterplan[x].y - 1));
-                    setStatus(index[i], 3, Math.Round((double)(masterplan[x].y + 1) / 2048 * 100).ToString() + "%");
+                    togo = TimeSpan.FromTicks(elapsed.Ticks / (masterplan[x].y + (boostmulti - 1) + 1) * (2048 - masterplan[x].y - (boostmulti - 1) - 1));
+                    setStatus(index[i], 3, Math.Round((double)(masterplan[x].y + (boostmulti - 1) + 1) / 2048 * 100).ToString() + "%");
                     setStatus(index[i], 4, timeSpanToString(elapsed));
                     setStatus(index[i], 5, timeSpanToString(togo));
                 }
@@ -1113,10 +1187,11 @@ namespace poc1poc2Conv
         {
             TaskInfo ti = (TaskInfo)stateInfo;
             Boolean ret;
+
             //determine cache cycle and front scoop back scoop cycle to alternate
             if (ti.x % 2 == 0)
             {
-                ret = ti.reader.ReadScoop(ti.y, ti.src.nonces, ti.z, ti.scoop1, Math.Min((int)ti.src.nonces - ti.z, ti.limit));
+                ret = ti.reader.ReadScoop(ti.y, ti.src.nonces, ti.z, ti.scoop1, Math.Min((int)ti.src.nonces*ti.boostmulti - ti.z, ti.limit));
                 if (!ret)
                 {
                     lock (mf)
@@ -1126,7 +1201,7 @@ namespace poc1poc2Conv
                         return;
                     }
                 }
-                ret = ti.reader.ReadScoop(4095 - ti.y, ti.src.nonces, ti.z, ti.scoop2, Math.Min((int)ti.src.nonces - ti.z, ti.limit));
+                ret = ti.reader.ReadScoop(4095 - ti.y - (ti.boostmulti - 1), ti.src.nonces, ti.z, ti.scoop2, Math.Min((int)ti.src.nonces * ti.boostmulti - ti.z, ti.limit));
                 if (!ret)
                 {
                     lock (mf)
@@ -1136,11 +1211,21 @@ namespace poc1poc2Conv
                         return;
                     }
                 }
-                if (ti.shuffle) Poc1poc2shuffle(ti.scoop1, ti.scoop2, Math.Min((int)ti.src.nonces - ti.z, ti.limit));
+                if (ti.shuffle)
+                {
+                    if (ti.boostmulti == 1)
+                    {
+                        Poc1poc2shuffle(ti.scoop1, ti.scoop2, Math.Min((int)ti.src.nonces * ti.boostmulti - ti.z, ti.limit));
+                    }
+                    else
+                    {
+                        Poc1poc2shuffleBoost(ti.scoop1, ti.scoop2, (int)ti.src.nonces, Math.Min((int)ti.src.nonces * ti.boostmulti - ti.z, ti.limit));
+                    }
+                }
             }
             else
             {
-                ret = ti.reader.ReadScoop(4095 - ti.y, ti.src.nonces, ti.z, ti.scoop4, Math.Min((int)ti.src.nonces - ti.z, ti.limit));
+                ret = ti.reader.ReadScoop(4095 - ti.y - (ti.boostmulti - 1), ti.src.nonces, ti.z, ti.scoop4, Math.Min((int)ti.src.nonces * ti.boostmulti - ti.z, ti.limit));
                 if (!ret)
                 {
                     lock (mf)
@@ -1150,7 +1235,7 @@ namespace poc1poc2Conv
                         return;
                     }
                 }
-                ret = ti.reader.ReadScoop(ti.y, ti.src.nonces, ti.z, ti.scoop3, Math.Min((int)ti.src.nonces - ti.z, ti.limit));
+                ret = ti.reader.ReadScoop(ti.y, ti.src.nonces, ti.z, ti.scoop3, Math.Min((int)ti.src.nonces * ti.boostmulti - ti.z, ti.limit));
                 if (!ret)
                 {
                     lock (mf)
@@ -1160,7 +1245,17 @@ namespace poc1poc2Conv
                         return;
                     }
                 }
-                if (ti.shuffle) Poc1poc2shuffle(ti.scoop3, ti.scoop4, Math.Min((int)ti.src.nonces - ti.z, ti.limit));
+                if (ti.shuffle)
+                {
+                    if (ti.boostmulti == 1)
+                    {
+                        Poc1poc2shuffle(ti.scoop3, ti.scoop4, Math.Min((int)ti.src.nonces * ti.boostmulti - ti.z, ti.limit));
+                    }
+                    else
+                    {
+                        Poc1poc2shuffleBoost(ti.scoop3, ti.scoop4, (int)ti.src.nonces, Math.Min((int)ti.src.nonces * ti.boostmulti - ti.z, ti.limit));
+                    }
+                }
             }
             if (ti.x != 0) autoEvents[0].Set();
         }
@@ -1171,8 +1266,8 @@ namespace poc1poc2Conv
             Boolean ret;
             if (ti.x % 2 == 0)
             {
-                ret = ti.writer.WriteScoop(ti.y, ti.tar.nonces, ti.z + ti.src.start - ti.tar.start, ti.scoop1, Math.Min((int)ti.src.nonces - ti.z, ti.limit));
-                ret = ti.writer.WriteScoop(4095 - ti.y, ti.tar.nonces, ti.z + ti.src.start - ti.tar.start, ti.scoop2, Math.Min((int)ti.src.nonces - ti.z, ti.limit));
+                ret = ti.writer.WriteScoop(ti.y, ti.tar.nonces, ti.z + ti.src.start - ti.tar.start, ti.scoop1, Math.Min((int)ti.src.nonces*ti.boostmulti - ti.z, ti.limit));
+                ret = ti.writer.WriteScoop(4095 - ti.y - (ti.boostmulti - 1), ti.tar.nonces, ti.z + ti.src.start - ti.tar.start, ti.scoop2, Math.Min((int)ti.src.nonces * ti.boostmulti - ti.z, ti.limit));
                 if (!ret)
                 {
                     lock (mf)
@@ -1185,8 +1280,8 @@ namespace poc1poc2Conv
             }
             else
             {
-                ret = ti.writer.WriteScoop(4095 - ti.y, ti.tar.nonces, ti.z + ti.src.start - ti.tar.start, ti.scoop4, Math.Min((int)ti.src.nonces - ti.z, ti.limit));
-                ret = ti.writer.WriteScoop(ti.y, ti.tar.nonces, ti.z + ti.src.start - ti.tar.start, ti.scoop3, Math.Min((int)ti.src.nonces - ti.z, ti.limit));
+                ret = ti.writer.WriteScoop(4095 - ti.y - (ti.boostmulti - 1), ti.tar.nonces, ti.z + ti.src.start - ti.tar.start, ti.scoop4, Math.Min((int)ti.src.nonces * ti.boostmulti - ti.z, ti.limit));
+                ret = ti.writer.WriteScoop(ti.y, ti.tar.nonces, ti.z + ti.src.start - ti.tar.start, ti.scoop3, Math.Min((int)ti.src.nonces * ti.boostmulti - ti.z, ti.limit));
                 if (!ret)
                 {
                     lock (mf)
@@ -1249,6 +1344,24 @@ namespace poc1poc2Conv
                     buffer = scoop1.byteArrayField[64 * i + j];
                     scoop1.byteArrayField[64 * i + j] = scoop2.byteArrayField[64 * i + j];
                     scoop2.byteArrayField[64 * i + j] = buffer;
+                }
+            }
+        }
+
+        private static void Poc1poc2shuffleBoost(Scoop scoop1, Scoop scoop2, int nonces, int limit)
+        {
+            byte buffer;
+            int partition = limit / nonces;
+            for (int p = 0; p < partition; p++)
+            {
+                for (int i = 0; i < nonces; i++)
+                {
+                    for (int j = 32; j < 64; j++)
+                    {
+                        buffer = scoop1.byteArrayField[p*nonces*64+64 * i + j];
+                        scoop1.byteArrayField[p*nonces*64 + 64 * i + j] = scoop2.byteArrayField[(partition-p-1)*nonces*64 + 64 * i + j];
+                        scoop2.byteArrayField[(partition - p-1) * nonces*64 + 64 * i + j] = buffer;
+                    }
                 }
             }
         }
@@ -1339,6 +1452,11 @@ namespace poc1poc2Conv
         {
             lbl_status.Text = memNeeded();
         }
+
+        private void boost_CheckedChanged(object sender, EventArgs e)
+        {
+            lbl_status.Text = memNeeded();
+        }
     }
 
     struct plotfile
@@ -1357,6 +1475,7 @@ namespace poc1poc2Conv
         public int z;
         public int x;
         public int limit;
+        public int boostmulti;
         public plotfile src;
         public plotfile tar;
         public Scoop scoop1;
