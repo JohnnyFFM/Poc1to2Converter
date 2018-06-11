@@ -486,7 +486,7 @@ namespace poc1poc2Conv
             // 
             // columnHeader13
             // 
-            this.columnHeader13.Text = "Completition";
+            this.columnHeader13.Text = "Completion";
             this.columnHeader13.Width = 89;
             // 
             // columnHeader14
