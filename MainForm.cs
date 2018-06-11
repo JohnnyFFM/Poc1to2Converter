@@ -535,7 +535,7 @@ namespace poc1poc2Conv
             this.MaximizeBox = false;
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Johnny\'s POC1->POC2 Plot Converter v.2.1";
+            this.Text = "Johnny\'s POC1->POC2 Plot Converter v.2.21";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.grpConverter.ResumeLayout(false);
             this.grpConverter.PerformLayout();
@@ -614,7 +614,7 @@ namespace poc1poc2Conv
             string[] pfn = temp[temp.GetLength(0) - 1].Split('_');
             plotfile result;
             result.id = Convert.ToUInt64(pfn[0]);
-            result.start = Convert.ToInt64(pfn[1]);
+            result.start = Convert.ToUInt64(pfn[1]);
             result.nonces = Convert.ToInt64(pfn[2]);
             if (pfn.Length == 4)
             {
@@ -1266,8 +1266,8 @@ namespace poc1poc2Conv
             Boolean ret;
             if (ti.x % 2 == 0)
             {
-                ret = ti.writer.WriteScoop(ti.y, ti.tar.nonces, ti.z + ti.src.start - ti.tar.start, ti.scoop1, Math.Min((int)ti.src.nonces*ti.boostmulti - ti.z, ti.limit));
-                ret = ti.writer.WriteScoop(4095 - ti.y - (ti.boostmulti - 1), ti.tar.nonces, ti.z + ti.src.start - ti.tar.start, ti.scoop2, Math.Min((int)ti.src.nonces * ti.boostmulti - ti.z, ti.limit));
+                ret = ti.writer.WriteScoop(ti.y, ti.tar.nonces, ti.z , ti.scoop1, Math.Min((int)ti.src.nonces*ti.boostmulti - ti.z, ti.limit));
+                ret = ti.writer.WriteScoop(4095 - ti.y - (ti.boostmulti - 1), ti.tar.nonces, ti.z, ti.scoop2, Math.Min((int)ti.src.nonces * ti.boostmulti - ti.z, ti.limit));
                 if (!ret)
                 {
                     lock (mf)
@@ -1280,8 +1280,8 @@ namespace poc1poc2Conv
             }
             else
             {
-                ret = ti.writer.WriteScoop(4095 - ti.y - (ti.boostmulti - 1), ti.tar.nonces, ti.z + ti.src.start - ti.tar.start, ti.scoop4, Math.Min((int)ti.src.nonces * ti.boostmulti - ti.z, ti.limit));
-                ret = ti.writer.WriteScoop(ti.y, ti.tar.nonces, ti.z + ti.src.start - ti.tar.start, ti.scoop3, Math.Min((int)ti.src.nonces * ti.boostmulti - ti.z, ti.limit));
+                ret = ti.writer.WriteScoop(4095 - ti.y - (ti.boostmulti - 1), ti.tar.nonces, ti.z , ti.scoop4, Math.Min((int)ti.src.nonces * ti.boostmulti - ti.z, ti.limit));
+                ret = ti.writer.WriteScoop(ti.y, ti.tar.nonces, ti.z , ti.scoop3, Math.Min((int)ti.src.nonces * ti.boostmulti - ti.z, ti.limit));
                 if (!ret)
                 {
                     lock (mf)
@@ -1456,7 +1456,7 @@ namespace poc1poc2Conv
     struct plotfile
     {
         public ulong id;
-        public long start;
+        public ulong start;
         public long nonces;
         public long stagger;
     }
