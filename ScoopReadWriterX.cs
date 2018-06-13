@@ -106,8 +106,10 @@ namespace poc1poc2Conv
                 MessageBox.Show("Scoop: " + scoop.ToString() + " " + e.Message, "I/O Error - Seek to read", MessageBoxButtons.OK);
                 return false;
             }
-            try { 
-            _fs.Read(target.byteArrayField, 0, limit * 64);
+            try {
+                //interrupt avoider 1mb read 64*16384
+                for (int i = 0; i < limit * 64; i += (64 * 16384))
+                    _fs.Read(target.byteArrayField, i, Math.Min(64 * 16384, limit * 64 - i));
             }
             catch (Exception e)
             {
@@ -132,7 +134,9 @@ namespace poc1poc2Conv
             }
             try
             {
-                _fs.Write(source.byteArrayField, 0, limit * 64);
+                //interrupt avoider 1mb read 64*16384
+                for (int i = 0; i < limit * 64; i += (64 * 16384))
+                    _fs.Write(source.byteArrayField, i, Math.Min(64 * 16384, limit * 64 - i));
             }
             catch (Exception e)
             {
