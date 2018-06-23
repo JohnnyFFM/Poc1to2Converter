@@ -535,7 +535,7 @@ namespace poc1poc2Conv
             this.MaximizeBox = false;
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Johnny\'s POC1->POC2 Plot Converter v.2.3";
+            this.Text = "Johnny\'s POC1->POC2 Plot Converter v.2.4";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.grpConverter.ResumeLayout(false);
             this.grpConverter.PerformLayout();
@@ -644,15 +644,15 @@ namespace poc1poc2Conv
                     nonces = Convert.ToInt32(x.SubItems[4].Text);
                     if (fastmode.Checked && outputDir.Text != "")
                     {
-                       localmem = Math.Min((memoryLimit.Value-1), Math.Ceiling((decimal)nonces / (2 << 11)));
+                       localmem = Math.Min((memoryLimit.Value-3), Math.Ceiling((decimal)nonces / (2 << 11)));
                     }
                     else
                     {
-                       localmem = Math.Min((memoryLimit.Value - 1), Math.Ceiling((decimal)nonces / (2 << 12)));
+                       localmem = Math.Min((memoryLimit.Value - 3), Math.Ceiling((decimal)nonces / (2 << 12)));
                     }
                     if (boost.Checked)
                     {
-                        for(int i=0; localmem*(2<<i) < (memoryLimit.Value - 1); i++)
+                        for(int i=0; localmem*(2<<i) < (memoryLimit.Value - 3); i++)
                         {
                             boostmulti = (2 << i);
                         }
@@ -814,7 +814,7 @@ namespace poc1poc2Conv
         {
 
             // calc maximum nonces to read (limit)
-            int limit = Convert.ToInt32(memoryLimit.Value - 1) * 8192;
+            int limit = Convert.ToInt32(memoryLimit.Value - 3) * 8192;
             //loop all tasks
             for (int i = 0; i < index.Length; i++)
             {
@@ -835,7 +835,7 @@ namespace poc1poc2Conv
                 localmem = Math.Min(memoryLimit.Value, Math.Ceiling((decimal)nonces[i] / (2 << 12)));
                 if (boost.Checked)
                 {
-                    for (int x = 0; localmem * (2 << x) < (memoryLimit.Value-1); x++)
+                    for (int x = 0; localmem * (2 << x) < (memoryLimit.Value-3); x++)
                     {
                         {
                             boostmulti = (2 << x);
@@ -998,7 +998,7 @@ namespace poc1poc2Conv
         private void Conversion2(int[] index, string[] filename, int[] nonces)
         {
             // calc maximum nonces to read (limit)
-            int limit = Convert.ToInt32(memoryLimit.Value - 1) * 4096;
+            int limit = Convert.ToInt32(memoryLimit.Value - 3) * 4096;
             //loop all tasks
             for (int i = 0; i < index.Length; i++)
             {
@@ -1019,7 +1019,7 @@ namespace poc1poc2Conv
                 localmem = Math.Min(memoryLimit.Value, Math.Ceiling((decimal)nonces[i] / (2 << 11)));
                 if (boost.Checked)
                 {
-                    for (int x = 0; localmem * (2 << x) < (memoryLimit.Value - 1); x++)
+                    for (int x = 0; localmem * (2 << x) < (memoryLimit.Value - 3); x++)
                     {
                         {
                             boostmulti = (2 << x);
